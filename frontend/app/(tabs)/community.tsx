@@ -48,10 +48,10 @@ interface ToastNotification {
 }
 
 const categories = [
-  { id: 'general', name: '🏠 General', icon: '��' },
-  { id: 'tips', name: '💡 Tips & Tricks', icon: '��' },
-  { id: 'research', name: '🧠 ADHD Research', icon: '��' },
-  { id: 'success', name: '�� Success Stories', icon: '��' },
+  { id: 'general', name: '🏠 General', icon: '  ' },
+  { id: 'tips', name: '💡 Tips & Tricks', icon: '  ' },
+  { id: 'research', name: '🧠 ADHD Research', icon: '  ' },
+  { id: 'success', name: '   Success Stories', icon: '  ' },
   { id: 'support', name: '🆘 Support & Help', icon: '🆘' }
 ];
 
@@ -122,7 +122,7 @@ export default function CommunityScreen() {
   useEffect(() => {
     if (Platform.OS === 'web') {
       const handleFocus = () => {
-        console.log('�� Community tab focused, checking for profile image updates...');
+        console.log('   Community tab focused, checking for profile image updates...');
         loadProfileImage();
       };
 
@@ -390,81 +390,58 @@ export default function CommunityScreen() {
       prev.map((notif: Notification) => ({ ...notif, read: true }))
     );
   };
+// Create new post - Twitter style
+const handleCreatePost = async () => {
+  if (!newPost.trim()) return;
 
-  // Create new post - Twitter style
-  const handleCreatePost = async () => {
-    if (!newPost.trim()) return;
+  if (!user) {
+    Alert.alert('Login Required', 'Please log in to create posts');
+    return;
+  }
 
-    if (!user) {
-      Alert.alert('Login Required', 'Please log in to create posts');
+  setIsLoading(true);
+
+  try {
+    const token = await ensureAuthToken();
+    if (!token) {
+      showToast('Authentication required to create posts', 'warning');
       return;
     }
 
-    setIsLoading(true);
+    const response = await api.post('/community/posts', {
+      content: newPost.trim(),
+      category: activeCategory
+    });
 
-    try {
-      const token = await ensureAuthToken();
-      if (!token) {
-        showToast('Authentication required to create posts', 'warning');
-        return;
-      }
+    const data = response.data;
+    if (data?.success && data.post) {
+      const created = data.post;
+      const normalizedPost: Post = {
+        id: created.id || created._id || `post_${Date.now()}`,
+        content: created.content || '',
+        author: created.author || user.name || 'Anonymous',
+        authorId: created.author_id || created.authorId || user.id || user.email || 'anonymous',
+        category: created.category || activeCategory,
+        timestamp: created.timestamp ? new Date(created.timestamp) : new Date(),
+        likes: typeof created.likes === 'number' ? created.likes : 0,
+        replies: typeof created.replies === 'number' ? created.replies : 0,
+        shares: typeof created.shares === 'number' ? created.shares : 0,
+        userLiked: Boolean(created.user_liked ?? created.userLiked ?? false),
+      };
 
-      const response = await api.post('/community/posts', {
-        content: newPost.trim(),
-        category: activeCategory
-      });
-
-      const data = response.data;
-      if (data?.success && data.post) {
-        const created = data.post;
-        const normalizedPost: Post = {
-          id: created.id || created._id || `post_${Date.now()}`,
-          content: created.content || '',
-          author: created.author || user.name || 'Anonymous',
-          authorId: created.author_id || created.authorId || user.id || user.email || 'anonymous',
-          category: created.category || activeCategory,
-          timestamp: created.timestamp ? new Date(created.timestamp) : new Date(),
-          likes: typeof created.likes === 'number' ? created.likes : 0,
-          replies: typeof created.replies === 'number' ? created.replies : 0,
-          shares: typeof created.shares === 'number' ? created.shares : 0,
-          userLiked: Boolean(created.user_liked ?? created.userLiked ?? false),
-        };
-
-        setPosts((prev: Post[]) => [normalizedPost, ...prev]);
-        showToast('Post created and saved!', 'success');
-        setNewPost('');
-      } else {
-        showToast('Failed to create post', 'warning');
-      }
-    } catch (error) {
-      console.error('❌ Error creating post:', error);
-      showToast('Failed to create post', 'warning');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-          id: `post_${Date.now()}`,
-          ...postData,
-          timestamp: new Date(),
-          likes: 0,
-          replies: 0,
-          shares: 0,
-          userLiked: false
-        };
-        setPosts((prev: Post[]) => [post, ...prev]);
-        showToast('Test post created!', 'success');
-        console.log('�� Test post created (not saved to backend):', post);
-      }
-
+      setPosts((prev: Post[]) => [normalizedPost, ...prev]);
+      showToast('Post created and saved!', 'success');
       setNewPost('');
-    } catch (error) {
-      console.error('❌ Error creating post:', error);
+    } else {
       showToast('Failed to create post', 'warning');
-    } finally {
-      setIsLoading(false);
     }
-  };
-
+  } catch (error) {
+    console.error('❌ Error creating post:', error);
+    showToast('Failed to create post', 'warning');
+  } finally {
+    setIsLoading(false);
+  }
+};
   // Handle delete post
   const handleDeletePost = (postId: string) => {
     const performDelete = async () => {
@@ -723,7 +700,7 @@ export default function CommunityScreen() {
       {/* Trending Hashtags */}
       {getTrendingHashtags().length > 0 && (
         <View style={styles.trendingContainer}>
-          <Text style={styles.trendingTitle}>�� Trending in {categories.find(c => c.id === activeCategory)?.name}</Text>
+          <Text style={styles.trendingTitle}>   Trending in {categories.find(c => c.id === activeCategory)?.name}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.trendingScroll}>
             {getTrendingHashtags().map((hashtag, index) => (
               <TouchableOpacity
@@ -802,7 +779,7 @@ export default function CommunityScreen() {
                     <View style={styles.postAvatar}>
                       {getUserAvatar(post.authorId) ? (
                         <View style={styles.avatarImageContainer}>
-                          <Text style={styles.avatarText}>��</Text>
+                          <Text style={styles.avatarText}>  </Text>
                         </View>
                       ) : (
                         <Text style={styles.postAvatarText}>
@@ -888,7 +865,7 @@ export default function CommunityScreen() {
                   <View style={styles.replyAvatar}>
                     {profileImage ? (
                       <View style={styles.avatarImageContainer}>
-                        <Text style={styles.avatarText}>��</Text>
+                        <Text style={styles.avatarText}>  </Text>
                       </View>
                     ) : (
                       <Text style={styles.replyAvatarText}>
