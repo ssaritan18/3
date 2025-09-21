@@ -19,13 +19,22 @@ from datetime import datetime, timezone, timedelta, date
 import base64
 import requests
 from jose import jwt, JWTError
-from passlib.context import CryptContext
 import aiosmtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import jinja2
 import random
 from aiofiles import open as aio_open
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
 
 # Import subscription router
 from app.routers.subscriptions import router as subscriptions_router
