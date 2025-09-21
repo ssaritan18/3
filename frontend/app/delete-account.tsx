@@ -65,7 +65,7 @@ export default function DeleteAccountScreen() {
 
       const finalReason = reason === 'Other (please specify)' ? customReason : reason;
 
-      const response = await api.post('/account/delete', {
+      const response = await api.post('/api/account/delete', {
         reason: finalReason,
         user_email: userEmail,
         confirmation: true

@@ -68,7 +68,7 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get('/community/posts');
+      const response = await api.get('/api/community/posts');
       const data = response.data;
 
       if (data?.success && Array.isArray(data.posts)) {
@@ -96,7 +96,7 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const response = await api.post('/community/posts', { content: content.trim(), category });
+      const response = await api.post('/api/community/posts', { content: content.trim(), category });
       const data = response.data;
 
       if (data?.success && data.post) {
@@ -122,7 +122,7 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const response = await api.post(`/community/posts/${postId}/like`);
+      const response = await api.post(`/api/community/posts/${postId}/like`);
       const data = response.data;
 
       if (data?.success) {
@@ -144,7 +144,7 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      await api.delete(`/community/posts/${postId}`);
+      await api.delete(`/api/community/posts/${postId}`);
       setPosts(prev => prev.filter(post => post.id !== postId));
     } catch (err) {
       console.error('Failed to delete community post:', err);
@@ -164,7 +164,7 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const response = await api.post(`/community/posts/${postId}/reply`, { content: text.trim() });
+      const response = await api.post(`/api/community/posts/${postId}/reply`, { content: text.trim() });
       const data = response.data;
 
       if (data?.success) {

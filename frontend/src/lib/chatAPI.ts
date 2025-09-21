@@ -15,7 +15,7 @@ export async function listChats() {
     throw new Error('Authentication required');
   }
 
-  const response = await api.get('/chats');
+  const response = await api.get('/api/chats');
   return response.data?.chats || [];
 }
 
@@ -25,7 +25,7 @@ export async function getMessages(chatId: string) {
     throw new Error('Authentication required');
   }
 
-  const response = await api.get(`/chats/${chatId}/messages`);
+  const response = await api.get(`/api/chats/${chatId}/messages`);
   return response.data?.messages || [];
 }
 
@@ -35,7 +35,7 @@ export async function sendMessage(chatId: string, text: string, type: string = '
     throw new Error('Authentication required');
   }
 
-  const response = await api.post(`/chats/${chatId}/messages`, { text, type });
+  const response = await api.post(`/api/chats/${chatId}/messages`, { text, type });
   return response.data;
 }
 
@@ -45,7 +45,7 @@ export async function createGroupChat(title: string) {
     throw new Error('Authentication required');
   }
 
-  const response = await api.post('/chats/group', { title });
+  const response = await api.post('/api/chats/group', { title });
   return response.data;
 }
 
@@ -55,7 +55,7 @@ export async function openDirectChat(friendId: string) {
     throw new Error('Authentication required');
   }
 
-  const response = await api.post(`/chats/direct/${friendId}`);
+  const response = await api.post(`/api/chats/direct/${friendId}`);
   return response.data;
 }
 
@@ -65,7 +65,7 @@ export async function joinGroupChat(code: string) {
     throw new Error('Authentication required');
   }
 
-  const response = await api.post('/chats/join', { code });
+  const response = await api.post('/api/chats/join', { code });
   return response.data;
 }
 
@@ -75,7 +75,7 @@ export async function reactToMessage(chatId: string, messageId: string, reaction
     throw new Error('Authentication required');
   }
 
-  const response = await api.post(`/chats/${chatId}/messages/${messageId}/react`, { type: reactionType });
+  const response = await api.post(`/api/chats/${chatId}/messages/${messageId}/react`, { type: reactionType });
   return response.data;
 }
 
@@ -93,7 +93,7 @@ export async function sendVoiceMessage(chatId: string, voicePayload: VoiceMessag
     throw new Error('Authentication required');
   }
 
-  const response = await api.post(`/chats/${chatId}/voice`, {
+  const response = await api.post(`/api/chats/${chatId}/voice`, {
     chat_id: chatId,
     ...voicePayload,
   });

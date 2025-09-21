@@ -161,7 +161,7 @@ export default function CommunityScreen() {
   const loadPostsFromBackend = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await api.get('/community/posts', { params: { category: activeCategory } });
+      const response = await api.get('/api/community/posts', { params: { category: activeCategory } });
       const data = response.data;
 
       if (data?.success && Array.isArray(data.posts)) {
@@ -408,7 +408,7 @@ const handleCreatePost = async () => {
       return;
     }
 
-    const response = await api.post('/community/posts', {
+    const response = await api.post('/api/community/posts', {
       content: newPost.trim(),
       category: activeCategory
     });
@@ -452,7 +452,7 @@ const handleCreatePost = async () => {
           return;
         }
 
-        await api.delete(`/community/posts/${postId}`);
+        await api.delete(`/api/community/posts/${postId}`);
         setPosts((prev: Post[]) => prev.filter((post: Post) => post.id !== postId));
         showToast('Post deleted successfully!', 'success');
       } catch (error) {
@@ -497,7 +497,7 @@ const handleCreatePost = async () => {
         return;
       }
 
-      const response = await api.post(`/community/posts/${postId}/like`);
+      const response = await api.post(`/api/community/posts/${postId}/like`);
       const data = response.data;
 
       if (data?.success) {
@@ -544,7 +544,7 @@ const handleCreatePost = async () => {
         return;
       }
 
-      const response = await api.post(`/community/posts/${postId}/share`);
+      const response = await api.post(`/api/community/posts/${postId}/share`);
       const data = response.data;
 
       if (data?.success) {
@@ -582,7 +582,7 @@ const handleCreatePost = async () => {
         return;
       }
 
-      const response = await api.post(`/community/posts/${selectedPost.id}/reply`, {
+      const response = await api.post(`/api/community/posts/${selectedPost.id}/reply`, {
         content: replyText.trim()
       });
 

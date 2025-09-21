@@ -17,7 +17,7 @@ export default function ForgotPin() {
 
     setLoading(true);
     try {
-      const res = await api.post("/auth/forgot-password", { email: email.trim() });
+      const res = await api.post("/api/auth/forgot-password", { email: email.trim() });
       
       Alert.alert(
         "Reset Email Sent! 📧",

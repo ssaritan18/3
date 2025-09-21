@@ -27,7 +27,7 @@ export const useTasksStore = create<TaskState>((set, get) => ({
   fetchToday: async () => {
     set({ loading: true });
     try {
-      const res = await api.get("/tasks/today");
+      const res = await api.get("/api/tasks/today");
       set({ tasks: res.data.tasks || [] });
     } catch (e) {
       // ignore for now
@@ -37,7 +37,7 @@ export const useTasksStore = create<TaskState>((set, get) => ({
   },
   createTask: async (t) => {
     try {
-      const res = await api.post("/tasks", t);
+      const res = await api.post("/api/tasks", t);
       set({ tasks: [...get().tasks, res.data] });
     } catch (e) {
       Alert.alert("Error", "Unable to create task.");
@@ -45,7 +45,7 @@ export const useTasksStore = create<TaskState>((set, get) => ({
   },
   increment: async (taskId) => {
     try {
-      const res = await api.post(`/tasks/${taskId}/increment`);
+      const res = await api.post(`/api/tasks/${taskId}/increment`);
       set({ tasks: get().tasks.map((tk) => (tk._id === taskId ? res.data : tk)) });
     } catch (e) {
       // ignore
@@ -53,7 +53,7 @@ export const useTasksStore = create<TaskState>((set, get) => ({
   },
   removeTask: async (taskId) => {
     try {
-      await api.delete(`/tasks/${taskId}`);
+      await api.delete(`/api/tasks/${taskId}`);
       set({ tasks: get().tasks.filter((t) => t._id !== taskId) });
     } catch (e) {
       // ignore

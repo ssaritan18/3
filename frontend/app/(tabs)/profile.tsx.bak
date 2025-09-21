@@ -146,7 +146,7 @@ export default function ProfileScreen() {
       return;
     }
     try {
-      const res = await api.post("/dev/seed-demo");
+      const res = await api.post("/api/dev/seed-demo");
       const users = res.data?.users || [];
       const lines = users.map((u: any) => `${u.name} — ${u.email} / ${u.password}`).join("\n");
       Alert.alert("Demo users seeded", lines || "Seed complete.");

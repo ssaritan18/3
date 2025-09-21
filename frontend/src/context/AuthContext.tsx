@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (t) {
             await setToken(t);
             try {
-              const me = await api.get("/me");
+              const me = await api.get("/api/me");
               const u: User = { name: me.data.name, email: me.data.email, photoBase64: me.data.photo_base64 };
               setUser(u); setAuthed(true);
               if (PERSIST_ENABLED) await saveJSON(KEYS.user, u);
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("📡 Making register API call to backend...");
       console.log("🔗 Backend URL:", getBackendBaseUrl());
       try {
-        const res = await api.post("/auth/register", { name, email, password });
+        const res = await api.post("/api/auth/register", { name, email, password });
         console.log("✅ Register response:", res.data);
         
         // New flow: Registration returns message instead of token
@@ -151,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (true) {
       console.log("📡 Making login API call to backend...");
       try {
-        const res = await api.post("/auth/login", { email, password });
+        const res = await api.post("/api/auth/login", { email, password });
         console.log("✅ Login API response received:", res.status);
         
         if (res.data?.access_token) {
@@ -170,7 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
           // Try to get user profile
           try {
-            const profileRes = await api.get("/auth/me");
+            const profileRes = await api.get("/api/auth/me");
             if (profileRes.data) {
               const userData = { 
                 name: profileRes.data.name || email, 

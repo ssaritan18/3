@@ -4122,7 +4122,7 @@ async def get_message_reactions(message_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to get reactions: {str(e)}")
 
 # Community Posts API endpoints
-@app.post("/api/community/posts")
+@api_router.post("/community/posts")
 async def create_community_post(post: CommunityPostCreate, current_user = Depends(get_current_user)):
     """Create a new community post"""
     try:
@@ -4148,7 +4148,7 @@ async def create_community_post(post: CommunityPostCreate, current_user = Depend
         logger.error(f"❌ Failed to create community post: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to create post: {str(e)}")
 
-@app.get("/api/community/posts")
+@api_router.get("/community/posts")
 async def get_community_posts(category: Optional[str] = None, limit: int = 50):
     """Get community posts, optionally filtered by category"""
     try:
@@ -4170,7 +4170,7 @@ async def get_community_posts(category: Optional[str] = None, limit: int = 50):
         logger.error(f"❌ Failed to get community posts: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get posts: {str(e)}")
 
-@app.post("/api/community/posts/{post_id}/like")
+@api_router.post("/community/posts/{post_id}/like")
 async def like_community_post(post_id: str, current_user = Depends(get_current_user)):
     """Toggle like on a community post"""
     try:
@@ -4213,7 +4213,7 @@ async def like_community_post(post_id: str, current_user = Depends(get_current_u
         logger.error(f"❌ Failed to toggle like: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to toggle like: {str(e)}")
 
-@app.post("/api/community/posts/{post_id}/share")
+@api_router.post("/community/posts/{post_id}/share")
 async def share_community_post(post_id: str, current_user = Depends(get_current_user)):
     """Share a community post"""
     try:
@@ -4244,7 +4244,7 @@ async def share_community_post(post_id: str, current_user = Depends(get_current_
         logger.error(f"❌ Failed to share post: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to share post: {str(e)}")
 
-@app.post("/api/community/posts/{post_id}/reply")
+@api_router.post("/community/posts/{post_id}/reply")
 async def reply_to_community_post(post_id: str, reply: CommunityReplyCreate, current_user = Depends(get_current_user)):
     """Create a reply to a community post"""
     try:
@@ -4276,7 +4276,7 @@ async def reply_to_community_post(post_id: str, reply: CommunityReplyCreate, cur
         logger.error(f"❌ Failed to create reply: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to create reply: {str(e)}")
 
-@app.get("/api/community/posts/{post_id}/replies")
+@api_router.get("/community/posts/{post_id}/replies")
 async def get_community_post_replies(post_id: str):
     """Get all replies for a community post"""
     try:
@@ -4294,7 +4294,7 @@ async def get_community_post_replies(post_id: str):
         logger.error(f"❌ Failed to get replies: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get replies: {str(e)}")
 
-@app.delete("/api/community/posts/{post_id}")
+@api_router.delete("/community/posts/{post_id}")
 async def delete_community_post(post_id: str, current_user = Depends(get_current_user)):
     """Delete a community post (only by author)"""
     try:

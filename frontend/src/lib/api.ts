@@ -30,7 +30,7 @@ export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 console.log("🔗 API Base URL:", API_BASE_URL);
 // 3) axios instance
 export const api = axios.create({
-  baseURL: API_BASE_URL, 
+  baseURL: BACKEND_BASE_URL, 
   timeout: 30000,
   headers: { "Content-Type": "application/json" },
 });

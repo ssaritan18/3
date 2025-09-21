@@ -87,7 +87,7 @@ export const uploadImage = async (chatId: string, file: UploadableFile) => {
   formData.append("file", normalizeFileForUpload(file));
 
   try {
-    const response = await api.post(`/chats/${chatId}/upload`, formData, {
+    const response = await api.post(`/api/chats/${chatId}/upload`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
@@ -118,7 +118,7 @@ export const sendMessage = async (chatId: string, text: string) => {
   }
 
   try {
-    await api.post(`/chats/${chatId}/messages`, { text });
+    await api.post(`/api/chats/${chatId}/messages`, { text });
     console.log("✅ Message sent successfully");
     return true;
   } catch (error: any) {

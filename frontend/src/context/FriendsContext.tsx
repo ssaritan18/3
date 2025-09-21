@@ -280,11 +280,11 @@ export function FriendsProvider({ children }: { children: React.ReactNode }) {
   const refresh = async () => {
     if (syncEnabled && token) {
       try {
-        const fl = await api.get("/friends/list");
+        const fl = await api.get("/api/friends/list");
         const serverFriends = (fl.data.friends || []).map((f: any) => ({ id: f._id, name: f.name || "Friend", email: f.email }));
         setFriends(serverFriends);
         try {
-          const rq = await api.get("/friends/requests");
+          const rq = await api.get("/api/friends/requests");
           const serverReqs = (rq.data.requests || []).map((r: any) => ({ id: r._id, from: r.sender_name || r.sender_email || "Friend", email: r.sender_email, senderId: r.sender_id }));
           setRequests(serverReqs);
         } catch {}
@@ -320,7 +320,7 @@ export function FriendsProvider({ children }: { children: React.ReactNode }) {
     if (syncEnabled && token) {
       try {
         console.log("🌐 Making API call to /friends/request");
-        const response = await api.post("/friends/request", { email }); // Updated to new format
+        const response = await api.post("/api/friends/request", { email }); // Updated to new format
         console.log("✅ API call successful:", response.data);
         
         // Don't need to refresh immediately - real-time events will update the UI
@@ -341,7 +341,7 @@ export function FriendsProvider({ children }: { children: React.ReactNode }) {
     if (syncEnabled && token) {
       try {
         console.log("🌐 Accepting friend request via API:", id);
-        const response = await api.post(`/friends/accept/${id}`); // Updated to new format
+        const response = await api.post(`/api/friends/accept/${id}`); // Updated to new format
         console.log("✅ Friend request accepted via API:", response.data);
         
         // Remove from local requests immediately
@@ -370,7 +370,7 @@ export function FriendsProvider({ children }: { children: React.ReactNode }) {
 
     if (syncEnabled && token) {
       try {
-        await api.delete(`/friends/reject/${id}`);
+        await api.delete(`/api/friends/reject/${id}`);
         setRequests((prev) => prev.filter((r) => r.id !== id));
         console.log("✅ Friend request rejected via API");
         return;

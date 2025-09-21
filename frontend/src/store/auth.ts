@@ -66,7 +66,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 // Helper to complete Google login when we have id_token (handled in screen with hooks)
 export async function completeGoogleLogin(id_token: string) {
   try {
-    const res = await api.post("/auth/google", { id_token });
+    const res = await api.post("/api/auth/google", { id_token });
     const { user_id, palette } = res.data;
     await AsyncStorage.setItem("user_id", user_id);
     if (palette) await AsyncStorage.setItem("palette", JSON.stringify(palette));

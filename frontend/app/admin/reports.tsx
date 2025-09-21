@@ -74,7 +74,7 @@ export default function AdminReportsScreen() {
     try {
       setLoading(true);
       const params = statusFilter !== 'all' ? `?status=${statusFilter}` : '';
-      const response = await api.get(`/admin/reports${params}`, {
+      const response = await api.get(`/api/admin/reports${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -92,7 +92,7 @@ export default function AdminReportsScreen() {
 
   const loadDeletionRequests = async () => {
     try {
-      const response = await api.get('/admin/deletion-requests', {
+      const response = await api.get('/api/admin/deletion-requests', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -109,7 +109,7 @@ export default function AdminReportsScreen() {
   const updateReportStatus = async (reportId: string, status: string, notes: string) => {
     try {
       setLoading(true);
-      const response = await api.put(`/admin/reports/${reportId}`, {
+      const response = await api.put(`/api/admin/reports/${reportId}`, {
         status,
         admin_notes: notes
       }, {
@@ -143,7 +143,7 @@ export default function AdminReportsScreen() {
           onPress: async () => {
             try {
               setLoading(true);
-              const response = await api.delete(`/admin/account/${deletionRequest.user_id}?deletion_request_id=${deletionRequest.id}`, {
+              const response = await api.delete(`/api/admin/account/${deletionRequest.user_id}?deletion_request_id=${deletionRequest.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
               });
 
