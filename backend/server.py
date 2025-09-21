@@ -3967,7 +3967,7 @@ async def direct_register(req: RegisterRequest):
         "_id": uid,
         "name": req.name,
         "email": req.email.lower(),
-        "password": hashed_password,
+        "password_hash": hashed_password,
         "is_verified": False,
         "verification_token": verification_token,
         "verification_expires": expires_at,
