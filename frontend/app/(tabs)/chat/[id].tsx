@@ -172,7 +172,7 @@ export default function ChatDetail() {
 
   const handleReaction = async (messageId: string, reaction: string) => {
     try {
-      await reactMessage(messageId, reaction);
+      await reactMessage(id, messageId, reaction);
     } catch (error) {
       console.error("Failed to react to message:", error);
     }
