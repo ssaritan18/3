@@ -532,7 +532,13 @@ async def get_profile_picture(filename: str):
 async def get_chat_media(filename: str):
     """Serve chat media files"""
     try:
-        file_path = f"{os.getenv('UPLOAD_DIR', './uploads')}/chat/{filename}"
+        # Use the same UPLOAD_DIR as upload endpoint
+        upload_dir = os.getenv('UPLOAD_DIR', './uploads')
+        file_path = f"{upload_dir}/chat/{filename}"
+        
+        logger.info(f"🔍 Serving chat media: {filename}")
+        logger.info(f"🔍 Looking for file at: {file_path}")
+        logger.info(f"🔍 File exists: {os.path.exists(file_path)}")
         
         if not os.path.exists(file_path):
             raise HTTPException(status_code=404, detail="Media file not found")
@@ -2207,13 +2213,14 @@ async def upload_chat_media(
             )
         
         # Create uploads directory
-        upload_dir = Path(os.getenv('UPLOAD_DIR', './uploads/chat'))
-        upload_dir.mkdir(parents=True, exist_ok=True)
+        upload_dir = Path(os.getenv('UPLOAD_DIR', './uploads'))
+        chat_upload_dir = upload_dir / 'chat'
+        chat_upload_dir.mkdir(parents=True, exist_ok=True)
         
         # Generate unique filename
         file_extension = Path(file.filename).suffix.lower()
         unique_filename = f"{chat_id}_{user['_id']}_{int(time.time())}{file_extension}"
-        file_path = upload_dir / unique_filename
+        file_path = chat_upload_dir / unique_filename
         
         # Write file
         logger.info(f"📁 Writing file to: {file_path}")
@@ -2245,6 +2252,7 @@ async def upload_chat_media(
         raise
     except Exception as e:
         logger.error(f"❌ Media upload error: {e}")
+        logger.error(f"❌ Upload error details: chat_id={chat_id}, user_id={user['_id']}, filename={file.filename}")
         raise HTTPException(status_code=500, detail="Failed to upload media")
 
 # Phase 3: Enhanced Achievement System APIs for ADHD-friendly gamification

@@ -152,13 +152,14 @@ export default function ChatDetail() {
     try {
       await pickImageAndUpload(id, (result) => {
         console.log("🎯 Upload callback triggered with result:", result);
-        if (result) {
+        if (result && result.media_url) {
           console.log("📨 About to send message with media URL:", result.media_url);
           // Send message with media
           sendText(id, `📎 Media uploaded - ${result.media_url}`);
           Alert.alert("Success", "Media uploaded and sent successfully!");
         } else {
-          console.log("❌ No result in callback");
+          console.log("❌ No result or no media_url in callback");
+          Alert.alert("Error", "Media upload failed. Please try again.");
         }
       });
     } catch (error) {
