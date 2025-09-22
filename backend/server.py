@@ -4191,6 +4191,31 @@ async def get_community_posts(category: Optional[str] = None, limit: int = 50):
         logger.error(f"❌ Failed to get community posts: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get posts: {str(e)}")
 
+@api_router.get("/community/posts/{post_id}/replies")
+async def get_post_replies(post_id: str, current_user = Depends(get_current_user)):
+    """Get replies for a specific community post"""
+    try:
+        # Verify post exists
+        post = await db.community_posts.find_one({"id": post_id})
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+        
+        # Get replies for this post
+        replies = await db.community_replies.find({"post_id": post_id}).sort("timestamp", 1).to_list(100)
+        
+        # Convert ObjectId to string for JSON serialization
+        for reply in replies:
+            reply["id"] = str(reply["_id"])
+            reply["_id"] = str(reply["_id"])
+        
+        logger.info(f"📥 Retrieved {len(replies)} replies for post {post_id}")
+        return {"success": True, "replies": replies}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Failed to get post replies: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get post replies: {str(e)}")
+
 @api_router.post("/community/posts/{post_id}/like")
 async def like_community_post(post_id: str, current_user = Depends(get_current_user)):
     """Toggle like on a community post"""
