@@ -1894,12 +1894,11 @@ async def react_to_message(chat_id: str, message_id: str, payload: PostReaction,
         
         broadcast_count = 0
         for member_id in chat.get("members", []):
-            if member_id != user["_id"]:
-                try:
-                    await ws_broadcast_to_user(member_id, websocket_payload)
-                    broadcast_count += 1
-                except Exception as e:
-                    logger.error(f"❌ Failed to broadcast reaction to user {member_id}: {e}")
+            try:
+                await ws_broadcast_to_user(member_id, websocket_payload)
+                broadcast_count += 1
+            except Exception as e:
+                logger.error(f"❌ Failed to broadcast reaction to user {member_id}: {e}")
 
         logger.info(f"📡 Reaction update broadcast to {broadcast_count} chat members")
 
