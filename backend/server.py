@@ -1920,7 +1920,7 @@ async def react_to_message(chat_id: str, message_id: str, payload: PostReaction,
 @api_router.post("/chats/group")
 async def create_group_chat(payload: ChatCreate, user=Depends(get_current_user)):
     """Create a new group chat with invitation code"""
-    code = uuid.uuid4().hex[:6].upper()
+    code = str(random.randint(1000, 9999))  # 4 haneli kod
     doc = {
         "_id": str(uuid.uuid4()),
         "type": "group",
@@ -1933,6 +1933,31 @@ async def create_group_chat(payload: ChatCreate, user=Depends(get_current_user))
     await db.chats.insert_one(doc)
     logger.info(f"✅ Created group chat: {payload.title} with invite code: {code}")
     return doc
+
+@api_router.post("/chats/join")
+async def join_chat_by_code(payload: dict, user=Depends(get_current_user)):
+    """Join a chat using invitation code"""
+    code = payload.get("code", "").strip()
+    if not code:
+        raise HTTPException(status_code=400, detail="Code is required")
+    
+    # Find chat by code
+    chat = await db.chats.find_one({"invite_code": code})
+    if not chat:
+        raise HTTPException(status_code=404, detail="Invalid invitation code")
+    
+    # Check if user is already a member
+    if user["_id"] in chat.get("members", []):
+        return {"success": True, "chat": chat, "message": "Already a member"}
+    
+    # Add user to chat
+    await db.chats.update_one(
+        {"_id": chat["_id"]},
+        {"$addToSet": {"members": user["_id"]}}
+    )
+    
+    logger.info(f"✅ User {user.get('name')} joined chat {chat['title']} with code {code}")
+    return {"success": True, "chat": chat}
 
 @api_router.post("/chats/direct/{friend_id}")
 async def open_direct_chat(friend_id: str, user=Depends(get_current_user)):

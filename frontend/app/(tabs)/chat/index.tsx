@@ -75,6 +75,12 @@ export default function ChatList() {
             <Text style={styles.chatLastMessage} numberOfLines={1}>
               {lastMessage}
             </Text>
+            {isGroup && item.inviteCode && (
+              <View style={styles.inviteCodeContainer}>
+                <Text style={styles.inviteCodeLabel}>Invite Code:</Text>
+                <Text style={styles.inviteCode}>{item.inviteCode}</Text>
+              </View>
+            )}
             <View style={styles.chatFooter}>
               <Text style={styles.chatType}>{isGroup ? 'Group Chat' : 'Direct Message'}</Text>
               <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.6)" />
@@ -412,5 +418,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  inviteCodeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  inviteCodeLabel: {
+    color: '#A855F7',
+    fontSize: 12,
+    fontWeight: '600',
+    marginRight: 6,
+  },
+  inviteCode: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '800',
+    fontFamily: 'monospace',
   },
 });
