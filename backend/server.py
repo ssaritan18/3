@@ -2175,11 +2175,13 @@ async def upload_chat_media(
 ):
     """Upload media file for chat messages"""
     logger.info(f"📤 Processing media upload for chat {chat_id} from user {user['_id']}")
+    logger.info(f"📤 File details: {file.filename}, {file.content_type}, {file.size if hasattr(file, 'size') else 'unknown size'}")
     
     try:
         # Verify user has access to the chat
         chat = await db.chats.find_one({"_id": chat_id, "members": user["_id"]})
         if not chat:
+            logger.error(f"❌ Chat {chat_id} not found or user {user['_id']} not member")
             raise HTTPException(status_code=404, detail="Chat not found")
         
         # Validate file type
@@ -2213,13 +2215,22 @@ async def upload_chat_media(
         file_path = upload_dir / unique_filename
         
         # Write file
+        logger.info(f"📁 Writing file to: {file_path}")
         async with aio_open(file_path, 'wb') as f:
             await f.write(file_content)
+        
+        # Verify file was written
+        if file_path.exists():
+            logger.info(f"✅ File written successfully, size: {file_path.stat().st_size} bytes")
+        else:
+            logger.error(f"❌ File was not written to {file_path}")
+            raise HTTPException(status_code=500, detail="Failed to save file")
         
         # Create media URL (relative path)
         media_url = f"/uploads/chat/{unique_filename}"
         
         logger.info(f"✅ Media uploaded successfully: {media_url}")
+        logger.info(f"🔍 Full file path: {file_path.absolute()}")
         
         return {
             "success": True,
