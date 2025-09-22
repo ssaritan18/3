@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, TextInput, Alert, Switch } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from "../../src/context/AuthContext";
+import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,7 +12,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const REMEMBER_EMAIL_KEY = "@adhd_app_remembered_email";
 
 export default function Login() {
-  const { signIn, login, resetCredentials } = useAuth();
+  const { signIn, login, loginWithGoogle, resetCredentials } = useAuth();
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -65,6 +66,19 @@ export default function Login() {
 
   const handleForgotPassword = () => {
     router.push({ pathname: '/(auth)/forgot-password', params: { email } });
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      await loginWithGoogle();
+      // Navigation will be handled by AuthContext
+    } catch (error) {
+      console.error('Google Sign-In error:', error);
+      // Error handling is done in AuthContext
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleResetCredentials = async () => {
@@ -150,6 +164,24 @@ export default function Login() {
         <TouchableOpacity style={styles.glowLinkBtn} onPress={handleForgotPassword}>
           <Text style={styles.glowLinkText}>Forgot password?</Text>
         </TouchableOpacity>
+
+        {/* Divider */}
+        <View style={styles.dividerContainer}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* Google Sign-In Button */}
+        <View style={styles.googleSignInContainer}>
+          <GoogleSigninButton
+            style={styles.googleSignInButton}
+            size={GoogleSigninButton.Size.Wide}
+            color={GoogleSigninButton.Color.Dark}
+            onPress={handleGoogleSignIn}
+            disabled={isLoading}
+          />
+        </View>
 
         <TouchableOpacity style={styles.glowBackBtn} onPress={() => router.back()}>
           <Text style={styles.glowBackText}>Back to Welcome</Text>
@@ -278,5 +310,31 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 14,
     fontWeight: '600',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+    marginHorizontal: 20,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  dividerText: {
+    color: '#E5E7EB',
+    fontSize: 14,
+    fontWeight: '500',
+    marginHorizontal: 16,
+  },
+  googleSignInContainer: {
+    marginTop: 10,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  googleSignInButton: {
+    width: 260,
+    height: 48,
   },
 });

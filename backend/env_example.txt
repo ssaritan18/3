@@ -1,0 +1,32 @@
+# Database Configuration
+MONGODB_URL=mongodb://localhost:27017/adhders_app
+DATABASE_NAME=adhders_app
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=10080
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+
+# Email Configuration (Optional)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+
+# Server Configuration
+HOST=0.0.0.0
+PORT=8001
+DEBUG=True
+
+# CORS Configuration
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8081,https://yourdomain.com
+
+# File Upload Configuration
+MAX_FILE_SIZE=10485760
+UPLOAD_FOLDER=uploads
+
+# Rate Limiting
+RATE_LIMIT_PER_MINUTE=60

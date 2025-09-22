@@ -27,6 +27,7 @@ import jinja2
 import random
 from aiofiles import open as aio_open
 from passlib.context import CryptContext
+from google_auth_service import google_auth_service
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -1274,13 +1275,88 @@ async def auth_login(req: LoginRequest):
     if not pwd_context.verify(req.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    # TEMPORARY: Skip email verification for development
-    # TODO: Re-enable email verification when SMTP is configured
-    # if not user.get("email_verified", False):
-    #     raise HTTPException(status_code=403, detail="Please verify your email before logging in")
+    # Check email verification status
+    if not user.get("email_verified", False):
+        raise HTTPException(status_code=403, detail="Please verify your email before logging in. Check your inbox for verification instructions.")
     
     access = create_access_token(sub=user["_id"], email=user.get("email"))
     return Token(access_token=access)
+
+@api_router.post("/auth/google", response_model=Token)
+async def auth_google(req: dict):
+    """Authenticate user with Google Sign-In"""
+    try:
+        id_token = req.get("idToken")
+        if not id_token:
+            raise HTTPException(status_code=400, detail="ID token is required")
+        
+        # Verify Google ID token
+        google_user_info = await google_auth_service.verify_id_token(id_token)
+        if not google_user_info:
+            raise HTTPException(status_code=401, detail="Invalid Google ID token")
+        
+        # Check if email is verified by Google
+        if not google_auth_service.is_email_verified(google_user_info):
+            raise HTTPException(status_code=403, detail="Google email not verified")
+        
+        email = google_user_info["email"].lower()
+        google_id = google_user_info["google_id"]
+        
+        # Check if user exists in our database
+        user = await db.users.find_one({"email": email})
+        
+        if user:
+            # User exists, update Google ID if not set
+            if not user.get("google_id"):
+                await db.users.update_one(
+                    {"_id": user["_id"]},
+                    {"$set": {"google_id": google_id}}
+                )
+                logger.info(f"Updated Google ID for existing user: {email}")
+        else:
+            # Create new user
+            user_data = {
+                "_id": str(uuid.uuid4()),
+                "email": email,
+                "name": google_user_info["name"],
+                "google_id": google_id,
+                "email_verified": True,  # Google verified emails are trusted
+                "created_at": datetime.now(timezone.utc),
+                "last_login": datetime.now(timezone.utc),
+                "profile_picture": google_user_info.get("picture", ""),
+                "first_name": google_user_info.get("given_name", ""),
+                "last_name": google_user_info.get("family_name", ""),
+                "login_method": "google"
+            }
+            
+            result = await db.users.insert_one(user_data)
+            user = await db.users.find_one({"_id": result.inserted_id})
+            logger.info(f"Created new user via Google Sign-In: {email}")
+        
+        # Update last login
+        await db.users.update_one(
+            {"_id": user["_id"]},
+            {"$set": {"last_login": datetime.now(timezone.utc)}}
+        )
+        
+        # Create access token
+        access = create_access_token(sub=user["_id"], email=user.get("email"))
+        
+        return {
+            "access_token": access,
+            "user": {
+                "id": str(user["_id"]),
+                "name": user.get("name"),
+                "email": user.get("email"),
+                "profile_picture": user.get("profile_picture")
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Google authentication error: {e}")
+        raise HTTPException(status_code=500, detail="Authentication failed")
 
 # --- Users ---
 @api_router.get("/auth/me")

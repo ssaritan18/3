@@ -5,6 +5,7 @@ import { loadJSON, saveJSON } from "../utils/persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api, setAuthToken, getBackendBaseUrl } from "../lib/api";
 import { setInMemoryToken, setAuthToken as setSecureAuthToken, clearAuthToken } from "../utils/authTokenHelper";
+import { googleSignInService, GoogleUser } from "../services/googleSignInService";
 
 
 export type User = {
@@ -32,6 +33,7 @@ type AuthContextType = {
   signIn: (user: Partial<User>) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   resetCredentials: (email?: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -246,6 +248,88 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async () => {
+    console.log("🔐 Google Sign-In initiated");
+    
+    try {
+      // Check if Google Sign-In is available
+      const isAvailable = await googleSignInService.isGoogleSignInAvailable();
+      if (!isAvailable) {
+        throw new Error('Google Sign-In is not available on this device');
+      }
+
+      // Sign in with Google
+      const googleUser = await googleSignInService.signIn();
+      if (!googleUser) {
+        console.log('Google Sign-In was cancelled by user');
+        return;
+      }
+
+      console.log('✅ Google Sign-In successful, verifying with backend...');
+
+      // Send Google ID token to backend for verification
+      const response = await api.post('/api/auth/google', {
+        idToken: googleUser.idToken,
+        email: googleUser.email,
+        name: googleUser.name,
+        photo: googleUser.photo,
+        serverAuthCode: googleUser.serverAuthCode
+      });
+
+      if (response.data?.access_token) {
+        const token = response.data.access_token;
+        console.log('✅ Backend verification successful, setting auth state');
+        
+        // Set token using our secure storage system
+        await setToken(token);
+        setAuthed(true);
+        
+        // Set user data
+        const userData = {
+          id: response.data.user?.id || googleUser.id,
+          name: response.data.user?.name || googleUser.name,
+          email: response.data.user?.email || googleUser.email,
+          photoBase64: googleUser.photo ? `data:image/jpeg;base64,${googleUser.photo}` : null,
+          token: token
+        };
+        
+        setUser(userData);
+        await saveJSON(KEYS.user, userData);
+        
+        // Broadcast authentication success
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('authStateChanged', { 
+            detail: { isAuthenticated: true, token } 
+          }));
+        }
+        
+        console.log('✅ Google Sign-In completed successfully');
+      } else {
+        throw new Error('No access token received from backend');
+      }
+    } catch (error: any) {
+      console.error('❌ Google Sign-In failed:', error);
+      
+      // Sign out from Google if there was an error
+      try {
+        await googleSignInService.signOut();
+      } catch (signOutError) {
+        console.error('Failed to sign out from Google:', signOutError);
+      }
+      
+      // Show user-friendly error message
+      if (error.message?.includes('Google Play Services')) {
+        Alert.alert('Google Sign-In Error', 'Google Play Services not available. Please update Google Play Services and try again.');
+      } else if (error.message?.includes('network') || error.message?.includes('timeout')) {
+        Alert.alert('Connection Error', 'Unable to connect to server. Please check your internet connection and try again.');
+      } else {
+        Alert.alert('Sign-In Failed', error.message || 'Google Sign-In failed. Please try again.');
+      }
+      
+      throw error;
+    }
+  };
+
   const resetCredentials = async (email?: string) => {
     if (PERSIST_ENABLED) {
       const stored = await loadJSON<Credentials | null>(KEYS.credentials, null);
@@ -292,6 +376,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signIn, 
     register, 
     login, 
+    loginWithGoogle,
     resetCredentials, 
     signOut 
   }), [isAuthed, user, loading, palette, token]);
