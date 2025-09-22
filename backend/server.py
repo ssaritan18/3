@@ -1475,7 +1475,7 @@ async def delete_post(post_id: str, user=Depends(get_current_user)):
 @api_router.post("/posts/{post_id}/react")
 async def react_to_post(post_id: str, payload: PostReaction, user=Depends(get_current_user)):
     """Add reaction to a post"""
-    post = await db.posts.find_one({"_id": post_id})
+    post = await db.posts.find_one({"id": post_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
