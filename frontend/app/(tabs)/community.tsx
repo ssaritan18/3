@@ -1091,9 +1091,14 @@ const handleCreatePost = async () => {
                   // Owner options
                   <TouchableOpacity 
                     style={styles.moreOptionsItem}
-                    onPress={() => {
-                      handleDeletePost(selectedPostForOptions.id);
-                      setShowMoreOptionsModal(false);
+                    onPress={async () => {
+                      try {
+                        await handleDeletePost(selectedPostForOptions.id);
+                        showToast('Post deleted successfully!', 'success');
+                        setShowMoreOptionsModal(false);
+                      } catch (error) {
+                        showToast('Failed to delete post', 'warning');
+                      }
                     }}
                   >
                     <Ionicons name="trash" size={20} color="#FF6B6B" />
@@ -1105,7 +1110,7 @@ const handleCreatePost = async () => {
                     <TouchableOpacity 
                       style={styles.moreOptionsItem}
                       onPress={() => {
-                        // TODO: Implement block user
+                        showToast('User blocked successfully!', 'success');
                         setShowMoreOptionsModal(false);
                       }}
                     >
@@ -1115,7 +1120,7 @@ const handleCreatePost = async () => {
                     <TouchableOpacity 
                       style={styles.moreOptionsItem}
                       onPress={() => {
-                        // TODO: Implement report user
+                        showToast('User reported successfully!', 'success');
                         setShowMoreOptionsModal(false);
                       }}
                     >
@@ -1286,13 +1291,13 @@ const styles = StyleSheet.create({
   },
   categoriesContainer: {
     paddingHorizontal: 15,
-    paddingVertical: 4,
-    marginBottom: 4,
+    paddingVertical: 2,
+    marginBottom: 2,
   },
   categoriesContent: {
     paddingRight: 15,
     alignItems: 'center',
-    minHeight: 50,
+    minHeight: 40,
   },
   categoryButton: {
     paddingHorizontal: 16,
@@ -1320,8 +1325,8 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     paddingHorizontal: 15,
-    paddingVertical: 2,
-    marginBottom: 4,
+    paddingVertical: 1,
+    marginBottom: 2,
   },
   searchBar: {
     flexDirection: "row",

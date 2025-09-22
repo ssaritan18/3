@@ -526,7 +526,7 @@ export default function ChatDetail() {
                   </TouchableOpacity>
                 </View>
                 
-                <View style={styles.modalBody}>
+                <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
                   <Text style={styles.chatInfoTitle}>{chat?.title || 'Chat'}</Text>
                   <Text style={styles.chatInfoSubtitle}>
                     {msgs.length} messages • {chat?.members?.length || 0} members
@@ -594,7 +594,7 @@ export default function ChatDetail() {
                       </TouchableOpacity>
                     </View>
                   )}
-                </View>
+                </ScrollView>
               </LinearGradient>
             </View>
           </View>
@@ -952,6 +952,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: '80%',
     maxWidth: 320,
+    maxHeight: '80%',
     borderRadius: 20,
     overflow: 'hidden',
   },
