@@ -1201,7 +1201,16 @@ async def verify_email(token: str):
 @api_router.options("/auth/forgot-password")
 async def forgot_password_options():
     """Handle CORS preflight for forgot password"""
-    return {"message": "OK"}
+    from fastapi.responses import Response
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Max-Age": "86400"
+        }
+    )
 
 @api_router.post("/auth/forgot-password")
 async def forgot_password(req: PasswordResetRequest):
@@ -1242,7 +1251,16 @@ async def forgot_password(req: PasswordResetRequest):
 @api_router.options("/auth/reset-password")
 async def reset_password_options():
     """Handle CORS preflight for reset password"""
-    return {"message": "OK"}
+    from fastapi.responses import Response
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Max-Age": "86400"
+        }
+    )
 
 @api_router.post("/auth/reset-password")
 async def reset_password(req: PasswordResetConfirm):
