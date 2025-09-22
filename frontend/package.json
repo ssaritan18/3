@@ -3,7 +3,9 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "expo export --platform web",
+    "vercel-build": "expo export --platform web"
   },
   "dependencies": {
     "@babel/runtime": "^7.25.0",
