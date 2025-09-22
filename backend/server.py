@@ -160,7 +160,7 @@ async def send_email(to_email: str, subject: str, content: str) -> bool:
         # Create message
         message = MIMEMultipart("alternative")
         message["Subject"] = subject
-        message["From"] = SMTP_FROM_EMAIL
+        message["From"] = f"ADHDers Social Club Support <{SMTP_FROM_EMAIL}>"
         message["To"] = to_email
         
         # HTML content
