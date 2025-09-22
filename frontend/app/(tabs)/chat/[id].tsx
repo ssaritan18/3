@@ -302,7 +302,7 @@ export default function ChatDetail() {
                     });
                     e.currentTarget.style.display = 'none';
                   }}
-                  onLoad={() => {
+                  onLoad={(e) => {
                     console.log('✅ Image loaded successfully:', e.currentTarget.src);
                   }}
                 />

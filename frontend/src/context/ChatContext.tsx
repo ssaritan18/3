@@ -309,13 +309,20 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       
       console.log("✅ Chat: Fetched", convertedChats.length, "chats from backend");
       
+      // Fetch messages for all chats
+      console.log("📥 Chat: Fetching messages for all chats...");
+      for (const chat of convertedChats) {
+        console.log(`📥 Fetching messages for chat: ${chat.title} (${chat.id})`);
+        await fetchMessages(chat.id);
+      }
+      
     } catch (error) {
       console.error("❌ Chat: Failed to fetch chats:", error);
       setError("Failed to load chats");
     } finally {
       setIsLoading(false);
     }
-  }, [mode, isAuthenticated, convertBackendChat]);
+  }, [mode, isAuthenticated, convertBackendChat, fetchMessages]);
 
   // Fetch messages for a specific chat
   const fetchMessages = useCallback(async (chatId: string) => {
@@ -339,12 +346,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   // Refresh all data
   const refresh = useCallback(async () => {
-    await fetchChats();
-    // Fetch messages for all chats
-    for (const chat of backendChats) {
-      await fetchMessages(chat.id);
-    }
-  }, [fetchChats, fetchMessages, backendChats]);
+    console.log("🔄 ChatContext: Starting refresh...");
+    await fetchChats(); // fetchChats now also fetches messages
+  }, [fetchChats]);
 
   // Auto-fetch on mode/auth change
   useEffect(() => {
