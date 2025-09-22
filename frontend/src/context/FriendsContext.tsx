@@ -236,7 +236,7 @@ export function FriendsProvider({ children }: { children: React.ReactNode }) {
       (window as any).friendsDebug = { friends, requests, posts, presence };
       // Debug log removed to prevent infinite loop
     }
-  }, [friends, requests, posts, presence]);
+  }, []); // Remove dependencies to prevent infinite loop
 
   // Fallback polling when WS not available
   useEffect(() => {
