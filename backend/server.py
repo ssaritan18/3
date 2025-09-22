@@ -1966,6 +1966,24 @@ async def join_chat(payload: JoinByCodeReq, user=Depends(get_current_user)):
 @api_router.get("/chats")
 async def list_chats(user=Depends(get_current_user)):
     chats = await db.chats.find({"members": user["_id"]}).sort("created_at", -1).to_list(200)
+    
+    # Check if adhd_support chat exists, if not create it
+    adhd_support_exists = any(chat.get("_id") == "adhd_support" for chat in chats)
+    if not adhd_support_exists:
+        # Create adhd_support chat
+        adhd_chat = {
+            "_id": "adhd_support",
+            "type": "group",
+            "title": "ADHD Support Group",
+            "members": [user["_id"]],
+            "invite_code": "ADHD01",
+            "created_by": user["_id"],
+            "created_at": now_iso(),
+        }
+        await db.chats.insert_one(adhd_chat)
+        chats.insert(0, adhd_chat)  # Add to beginning
+        logger.info(f"✅ Created adhd_support chat for user {user['_id']}")
+    
     return {"chats": chats}
 
 @api_router.get("/chats/{chat_id}/messages")
