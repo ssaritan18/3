@@ -830,8 +830,11 @@ class CommunityReply(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CommunityReplyCreate(BaseModel):
-    post_id: str
     content: str
+    
+    class Config:
+        # Allow extra fields for debugging
+        extra = "allow"
 
 # Profile Management Models
 class ProfileUpdate(BaseModel):
@@ -4245,9 +4248,33 @@ async def share_community_post(post_id: str, current_user = Depends(get_current_
         raise HTTPException(status_code=500, detail=f"Failed to share post: {str(e)}")
 
 @api_router.post("/community/posts/{post_id}/reply")
-async def reply_to_community_post(post_id: str, reply: CommunityReplyCreate, current_user = Depends(get_current_user)):
+async def reply_to_community_post(post_id: str, request: Request, current_user = Depends(get_current_user)):
     """Create a reply to a community post"""
     try:
+        # Raw request body debug
+        body = await request.body()
+        logger.info(f"🔍 Raw request body: {body}")
+        
+        # Parse JSON manually
+        import json
+        try:
+            reply_data = json.loads(body)
+            logger.info(f"🔍 Parsed JSON: {reply_data}")
+        except Exception as e:
+            logger.error(f"❌ JSON parse error: {e}")
+            raise HTTPException(status_code=422, detail=f"Invalid JSON: {str(e)}")
+        
+        # Validate manually
+        if 'content' not in reply_data:
+            logger.error("❌ Missing 'content' field")
+            raise HTTPException(status_code=422, detail="Missing 'content' field")
+        
+        if not isinstance(reply_data['content'], str):
+            logger.error(f"❌ 'content' is not string: {type(reply_data['content'])}")
+            raise HTTPException(status_code=422, detail="'content' must be a string")
+        
+        logger.info(f"🔍 Reply request - post_id: {post_id}, content: '{reply_data['content']}', current_user: {current_user}")
+        
         post = await db.community_posts.find_one({"id": post_id})
         if not post:
             raise HTTPException(status_code=404, detail="Post not found")
@@ -4257,7 +4284,7 @@ async def reply_to_community_post(post_id: str, reply: CommunityReplyCreate, cur
             "post_id": post_id,
             "author": current_user['name'],
             "author_id": current_user['_id'],
-            "content": reply.content,
+            "content": reply_data['content'],
             "timestamp": datetime.now(timezone.utc)
         }
         
