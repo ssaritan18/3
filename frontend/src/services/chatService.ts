@@ -87,11 +87,20 @@ export const uploadImage = async (chatId: string, file: UploadableFile) => {
   formData.append("file", normalizeFileForUpload(file));
 
   try {
+    console.log("📤 Uploading file to:", `/api/chats/${chatId}/upload`);
+    console.log("📤 File details:", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      chatId
+    });
+    
     const response = await api.post(`/api/chats/${chatId}/upload`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
     console.log("✅ Upload successful:", response.data);
+    console.log("🔍 Full response:", response);
     return response.data;
   } catch (error: any) {
     console.error("💥 Upload error:", error);
