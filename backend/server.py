@@ -2951,6 +2951,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://adhd-connect-2.preview.emergentagent.com",
+        "https://adhderssocialclub4.vercel.app",  # Vercel production domain
+        "https://adhderssocialclub4-h5a0zo2hb-ssaritans-projects.vercel.app",  # Vercel deployment domain
         "http://localhost:3000",  # For development
         "http://localhost:19006", # For Expo web
         "http://localhost:8081",  # For Expo web
