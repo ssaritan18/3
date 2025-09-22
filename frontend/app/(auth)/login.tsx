@@ -2,7 +2,16 @@ import React, { useMemo, useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, TextInput, Alert, Switch } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from "../../src/context/AuthContext";
-import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
+// Google Sign-In only for mobile platforms
+let GoogleSigninButton: any = null;
+if (Platform.OS !== 'web') {
+  try {
+    const GoogleSignIn = require('@react-native-google-signin/google-signin');
+    GoogleSigninButton = GoogleSignIn.GoogleSigninButton;
+  } catch (error) {
+    console.log('Google Sign-In not available on this platform');
+  }
+}
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
