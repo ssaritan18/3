@@ -14,4 +14,5 @@ export const KEYS = {
   friends: "adhders_friends_v1",
   requests: "adhders_requests_v1",
   posts: "adhders_posts_v1",
+  communityPosts: "adhders_community_posts_v1",
 };

@@ -219,7 +219,18 @@ export default function CommunityScreen() {
     if (authorId === (user?.id || user?.email)) {
       return profileImage;
     }
-    return null; // Other users don't have profile images yet
+    // For other users, try to get from localStorage or return default
+    try {
+      const storedUsers = localStorage.getItem('adhders_friends_v1');
+      if (storedUsers) {
+        const users = JSON.parse(storedUsers);
+        const userData = users.find((u: any) => u.id === authorId || u.email === authorId);
+        return userData?.profileImage || null;
+      }
+    } catch (error) {
+      console.log('Error getting user avatar:', error);
+    }
+    return null;
   };
   
   // Get user initials for fallback avatar
@@ -689,36 +700,24 @@ const handleCreatePost = async () => {
     <LinearGradient
       colors={['#1a1a2e', '#16213e', '#0f3460']}
       style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Glow Header - Updated to match other pages style */}
+      {/* Compact Header */}
       <LinearGradient
         colors={['#8B5CF6', '#A855F7', '#EC4899', '#F97316']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[styles.glowHeader, { paddingTop: insets.top + 20 }]}
+        style={[styles.compactHeader, { paddingTop: insets.top + 10 }]}
       >
-        {/* Community Header with Modern Card Design */}
-        <View style={styles.modernCommunityCard}>
-          <View style={styles.communityHeader}>
-            {/* Icon with Gradient Border */}
-            <View style={styles.iconContainer}>
-              <LinearGradient
-                colors={['#F97316', '#EC4899', '#8B5CF6']}
-                style={styles.iconGradientBorder}
-              >
-                <View style={styles.icon}>
-                  <Text style={styles.iconText}>🌟</Text>
-                </View>
-              </LinearGradient>
-      </View>
-            
-            {/* Community Info with Modern Typography */}
-            <View style={styles.headerInfo}>
-              <Text style={styles.communityTitle}>Community Hub</Text>
-              <Text style={styles.communitySubtitle}>Share experiences with your ADHD community</Text>
+        <View style={styles.compactHeaderContent}>
+          <View style={styles.compactHeaderLeft}>
+            <Text style={styles.compactIcon}>🌟</Text>
+            <View>
+              <Text style={styles.compactTitle}>Community Hub</Text>
+              <Text style={styles.compactSubtitle}>Share experiences</Text>
             </View>
           </View>
         </View>
       </LinearGradient>
+
 
       {/* Categories */}
       <ScrollView 
@@ -827,7 +826,14 @@ const handleCreatePost = async () => {
       </View>
 
       {/* Posts Feed */}
-      <ScrollView style={styles.feedContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.feedContainer} 
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled={true}
+        scrollEnabled={true}
+        bounces={true}
+        alwaysBounceVertical={false}
+      >
         {/* Loading Indicator */}
         {isLoading && (
           <View style={styles.loadingContainer}>
@@ -1162,66 +1168,36 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
-  glowHeader: {
-    padding: 25,
-    paddingTop: 30,
-    paddingBottom: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
+  // Compact Header Styles
+  compactHeader: {
+    paddingHorizontal: 20,
+    paddingBottom: 15,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
-  modernCommunityCard: {
-    borderRadius: 20,
-    padding: 20,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    backdropFilter: 'blur(10px)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    // Remove solid background to let gradient show through
+  compactHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  communityHeader: {
+  compactHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  iconContainer: {
-    marginRight: 16,
+  compactIcon: {
+    fontSize: 20,
+    marginRight: 12,
   },
-  iconGradientBorder: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    padding: 3,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  icon: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconText: {
-    fontSize: 24,
-    color: 'white',
-  },
-  headerInfo: {
-    flex: 1,
-  },
-  communityTitle: {
-    fontSize: 24,
+  compactTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 4,
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-  communitySubtitle: {
-    fontSize: 14,
+  compactSubtitle: {
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
   },

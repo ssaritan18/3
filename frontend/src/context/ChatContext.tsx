@@ -200,6 +200,14 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }
   }, [localChats, localMessages, hydrated]);
 
+  // Auto-save backend data to storage for offline access
+  useEffect(() => {
+    if (hydrated && (backendChats.length > 0 || Object.keys(backendMessages).length > 0)) {
+      console.log('💾 Auto-saving backend data to storage...');
+      saveToStorage(backendChats, backendMessages);
+    }
+  }, [backendChats, backendMessages, hydrated]);
+
   // Persist local data changes
   useEffect(() => {
     if (!PERSIST_ENABLED || !hydrated) return;
@@ -210,6 +218,17 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     if (!PERSIST_ENABLED || !hydrated) return;
     saveJSON(KEYS.messages, localMessages);
   }, [localMessages, hydrated]);
+
+  // Persist backend data changes
+  useEffect(() => {
+    if (!PERSIST_ENABLED || !hydrated) return;
+    saveJSON(KEYS.chats, backendChats);
+  }, [backendChats, hydrated]);
+
+  useEffect(() => {
+    if (!PERSIST_ENABLED || !hydrated) return;
+    saveJSON(KEYS.messages, backendMessages);
+  }, [backendMessages, hydrated]);
 
   // Convert backend chat data to frontend format
   const convertBackendChat = useCallback((backendChat: any): Chat => ({
@@ -297,21 +316,39 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   // Fetch chats from backend
   const fetchChats = useCallback(async () => {
-    if (mode !== "sync" || !isAuthenticated) return;
+    if (mode !== "sync" || !isAuthenticated) {
+      console.log("📱 Chat: Not in sync mode or not authenticated, skipping fetch");
+      return;
+    }
     
     try {
+      console.log("📡 Chat: Starting to fetch chats from backend...");
       setIsLoading(true);
       setError(null);
       
       const backendChatsData = await chatAPI.listChats();
+      console.log("📥 Chat: Received backend data:", backendChatsData);
+      
       const convertedChats = backendChatsData.map(convertBackendChat);
       setBackendChats(convertedChats);
       
       console.log("✅ Chat: Fetched", convertedChats.length, "chats from backend");
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("❌ Chat: Failed to fetch chats:", error);
-      setError("Failed to load chats");
+      
+      // Handle specific error cases
+      if (error?.response?.status === 401) {
+        setError("Authentication required. Please sign in in Profile → Sync Mode.");
+      } else if (error?.response?.status === 403) {
+        setError("Access denied. Please check your permissions.");
+      } else if (error?.response?.status >= 500) {
+        setError("Server error. Please try again later.");
+      } else if (error?.message === "Authentication required") {
+        setError("Please sign in to access chats. Go to Profile → Sync Mode.");
+      } else {
+        setError(`Failed to load chats: ${error?.message || 'Unknown error'}`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -319,10 +356,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   // Fetch messages for a specific chat
   const fetchMessages = useCallback(async (chatId: string) => {
-    if (mode !== "sync" || !isAuthenticated) return;
+    if (mode !== "sync" || !isAuthenticated) {
+      console.log("📱 Chat: Not in sync mode or not authenticated, skipping message fetch for", chatId);
+      return;
+    }
 
     try {
+      console.log("📡 Chat: Fetching messages for chat:", chatId);
       const backendMessagesData = await chatAPI.getMessages(chatId);
+      console.log("📥 Chat: Received messages data:", backendMessagesData);
+      
       const convertedMessages = backendMessagesData.map(convertBackendMessage);
       
       setBackendMessages(prev => ({
@@ -332,8 +375,23 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       
       console.log("✅ Chat: Fetched", convertedMessages.length, "messages for chat", chatId);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error(`❌ Chat: Failed to fetch messages for chat ${chatId}:`, error);
+      
+      // Handle specific error cases for messages
+      if (error?.response?.status === 401) {
+        console.warn("🔐 Chat: Authentication required for messages");
+        setError("Please sign in to access messages. Go to Profile → Sync Mode.");
+      } else if (error?.response?.status === 403) {
+        console.warn("🚫 Chat: Access denied for messages");
+        setError("You don't have permission to access this chat.");
+      } else if (error?.response?.status === 404) {
+        console.warn("❓ Chat: Chat not found");
+        setError("This chat may have been deleted or you don't have access to it.");
+      } else {
+        console.warn("⚠️ Chat: Unknown error fetching messages:", error?.message);
+        setError(`Failed to load messages: ${error?.message || 'Unknown error'}`);
+      }
     }
   }, [mode, isAuthenticated, convertBackendMessage]);
 
@@ -502,10 +560,18 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
               status: m.status
             })));
             
-            return {
+            const newState = {
               ...prev,
               [chatId]: updatedMessages
             };
+            
+            // Auto-save WebSocket messages to storage for persistence
+            if (hydrated) {
+              console.log('💾 Auto-saving WebSocket message to storage...');
+              saveToStorage(backendChats, newState);
+            }
+            
+            return newState;
           });
           
           console.log("✅ WhatsApp-style WebSocket message processed and added to chat:", normalizedMessage.chat_id);

@@ -36,6 +36,7 @@ export default function ChatDetail() {
   const [messageReactions, setMessageReactions] = React.useState<Record<string, boolean>>({}); // Track heart reactions
   const [lastTap, setLastTap] = React.useState<{messageId: string, time: number} | null>(null); // Double-tap detection
   const [animatedHearts, setAnimatedHearts] = React.useState<Record<string, Animated.Value>>({}); // Animation values
+  const [showInviteModal, setShowInviteModal] = React.useState(false); // Invitation code modal
   const chat = chats.find((c) => c.id === id);
   const msgs = messagesByChat[id || ""] || [];
   
@@ -392,7 +393,10 @@ export default function ChatDetail() {
               </Text>
             </View>
             <View style={styles.headerActions}>
-              <TouchableOpacity style={styles.headerBtn}>
+              <TouchableOpacity 
+                style={styles.headerBtn}
+                onPress={() => setShowInviteModal(true)}
+              >
                 <Ionicons name="information-circle" size={20} color="rgba(255,255,255,0.8)" />
               </TouchableOpacity>
             </View>
@@ -498,6 +502,65 @@ export default function ChatDetail() {
                   <Text style={styles.emojiText}>{emoji}</Text>
                 </TouchableOpacity>
               ))}
+            </View>
+          </View>
+        )}
+
+        {/* Invitation Code Modal */}
+        {showInviteModal && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <LinearGradient
+                colors={['#1a1a2e', '#16213e', '#0f3460']}
+                style={styles.modalContent}
+              >
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Chat Information</Text>
+                  <TouchableOpacity 
+                    onPress={() => setShowInviteModal(false)}
+                    style={styles.closeButton}
+                  >
+                    <Ionicons name="close" size={24} color="rgba(255,255,255,0.8)" />
+                  </TouchableOpacity>
+                </View>
+                
+                <View style={styles.modalBody}>
+                  <Text style={styles.chatInfoTitle}>{chat?.title || 'Chat'}</Text>
+                  <Text style={styles.chatInfoSubtitle}>
+                    {msgs.length} messages • {chat?.members?.length || 0} members
+                  </Text>
+                  
+                  {chat?.inviteCode && (
+                    <View style={styles.inviteCodeSection}>
+                      <Text style={styles.inviteCodeLabel}>Invitation Code</Text>
+                      <View style={styles.inviteCodeContainer}>
+                        <Text style={styles.inviteCodeText}>{chat.inviteCode}</Text>
+                        <TouchableOpacity 
+                          style={styles.copyButton}
+                          onPress={() => {
+                            navigator.clipboard.writeText(chat.inviteCode || '');
+                            Alert.alert('Copied!', 'Invitation code copied to clipboard');
+                          }}
+                        >
+                          <Ionicons name="copy" size={20} color="#8B5CF6" />
+                        </TouchableOpacity>
+                      </View>
+                      <Text style={styles.inviteCodeDescription}>
+                        Share this code with friends to let them join this chat
+                      </Text>
+                    </View>
+                  )}
+                  
+                  {!chat?.inviteCode && (
+                    <View style={styles.noInviteCodeSection}>
+                      <Ionicons name="information-circle-outline" size={48} color="rgba(255,255,255,0.5)" />
+                      <Text style={styles.noInviteCodeText}>
+                        This is a direct chat. No invitation code needed.
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </LinearGradient>
             </View>
           </View>
         )}
@@ -831,6 +894,107 @@ const styles = StyleSheet.create({
     padding: 4,
     borderWidth: 1,
     borderColor: '#EC4899',
+  },
+  // Modal Styles
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContainer: {
+    width: '80%',
+    maxWidth: 320,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  modalContent: {
+    padding: 0,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  chatInfoTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  chatInfoSubtitle: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    marginBottom: 20,
+  },
+  inviteCodeSection: {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  inviteCodeLabel: {
+    color: '#8B5CF6',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  inviteCodeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+  },
+  inviteCodeText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    fontFamily: 'monospace',
+    flex: 1,
+  },
+  copyButton: {
+    padding: 8,
+    borderRadius: 6,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  inviteCodeDescription: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  noInviteCodeSection: {
+    alignItems: 'center',
+    padding: 20,
+  },
+  noInviteCodeText: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 12,
   },
   mediaContainer: {
     marginTop: 4,

@@ -2,6 +2,8 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { Alert } from 'react-native';
 import { api, setAuthToken as setApiAuthToken } from '../lib/api';
 import { getAuthToken } from '../utils/authTokenHelper';
+import { KEYS } from '../config';
+import { saveJSON, loadJSON } from '../utils/persist';
 export type Post = {
   id: string;
   content: string;
@@ -55,13 +57,24 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
   const ensureToken = useCallback(async () => {
-    const token = await getAuthToken();
-    if (token) {
-      setApiAuthToken(token);
+    try {
+      const token = await getAuthToken();
+      console.log('🔍 CommunityContext ensureToken - token found:', !!token);
+      if (token) {
+        setApiAuthToken(token);
+        console.log('✅ CommunityContext - API token set successfully');
+        return token;
+      } else {
+        console.warn('⚠️ CommunityContext - No token found, user needs to authenticate');
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ CommunityContext ensureToken error:', error);
+      return null;
     }
-    return token;
   }, []);
 
   const refreshPosts = useCallback(async () => {
@@ -158,29 +171,77 @@ export function CommunityProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
+      console.log('💬 CommunityContext addComment - starting for post:', postId);
       const token = await ensureToken();
       if (!token) {
-        Alert.alert('Authentication Required', 'Please sign in to reply to posts.');
+        console.warn('⚠️ CommunityContext addComment - no token, showing auth alert');
+        Alert.alert('Authentication Required', 'Please sign in to reply to posts. Go to Profile → Sync Mode to enable authentication.');
         return;
       }
 
+      console.log('📤 CommunityContext addComment - sending request to backend');
       const response = await api.post(`/api/community/posts/${postId}/reply`, { content: text.trim() });
       const data = response.data;
+
+      console.log('📥 CommunityContext addComment - backend response:', data);
 
       if (data?.success) {
         setPosts(prev => prev.map(post => post.id === postId
           ? { ...post, replies: typeof data.replies === 'number' ? data.replies : post.replies }
           : post));
+        console.log('✅ CommunityContext addComment - reply added successfully');
+      } else {
+        console.warn('⚠️ CommunityContext addComment - backend returned success: false');
+        Alert.alert('Error', 'Failed to add reply. Please try again.');
       }
-    } catch (err) {
-      console.error('Failed to add reply to community post:', err);
-      Alert.alert('Error', 'Failed to add reply.');
+    } catch (err: any) {
+      console.error('❌ CommunityContext addComment - error:', err);
+      
+      // Handle specific error cases
+      if (err?.response?.status === 401) {
+        Alert.alert('Authentication Required', 'Your session has expired. Please sign in again in Profile → Sync Mode.');
+      } else if (err?.response?.status === 403) {
+        Alert.alert('Access Denied', 'You do not have permission to reply to this post.');
+      } else if (err?.response?.status === 404) {
+        Alert.alert('Post Not Found', 'This post may have been deleted.');
+      } else {
+        Alert.alert('Error', `Failed to add reply: ${err?.message || 'Unknown error'}`);
+      }
     }
   }, [ensureToken]);
 
+  // Load posts from storage on mount
   useEffect(() => {
-    refreshPosts();
-  }, [refreshPosts]);
+    const loadStoredPosts = async () => {
+      try {
+        const storedPosts = await loadJSON<Post[] | null>(KEYS.communityPosts, null);
+        if (storedPosts && Array.isArray(storedPosts)) {
+          setPosts(storedPosts);
+          console.log('📱 Loaded community posts from storage:', storedPosts.length);
+        }
+      } catch (error) {
+        console.error('❌ Failed to load community posts from storage:', error);
+      } finally {
+        setHydrated(true);
+      }
+    };
+    
+    loadStoredPosts();
+  }, []);
+
+  // Auto-save posts to storage when they change
+  useEffect(() => {
+    if (hydrated && posts.length > 0) {
+      console.log('💾 Auto-saving community posts to storage...');
+      saveJSON(KEYS.communityPosts, posts);
+    }
+  }, [posts, hydrated]);
+
+  useEffect(() => {
+    if (hydrated) {
+      refreshPosts();
+    }
+  }, [refreshPosts, hydrated]);
 
   const value: CommunityContextType = {
     posts,

@@ -2007,14 +2007,7 @@ async def open_direct_chat(friend_id: str, user=Depends(get_current_user)):
     
     return chat_doc
 
-@api_router.post("/chats/join")
-async def join_chat(payload: JoinByCodeReq, user=Depends(get_current_user)):
-    chat = await db.chats.find_one({"invite_code": payload.code.upper()})
-    if not chat:
-        raise HTTPException(status_code=404, detail="Invalid code")
-    await db.chats.update_one({"_id": chat["_id"]}, {"$addToSet": {"members": user["_id"]}})
-    chat = await db.chats.find_one({"_id": chat["_id"]})
-    return chat
+# Removed duplicate join endpoint - using the one above
 
 @api_router.get("/chats")
 async def list_chats(user=Depends(get_current_user)):
