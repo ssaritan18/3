@@ -1198,6 +1198,11 @@ async def verify_email(token: str):
         "token_type": "bearer"
     }
 
+@api_router.options("/auth/forgot-password")
+async def forgot_password_options():
+    """Handle CORS preflight for forgot password"""
+    return {"message": "OK"}
+
 @api_router.post("/auth/forgot-password")
 async def forgot_password(req: PasswordResetRequest):
     """Send password reset email"""
@@ -1233,6 +1238,11 @@ async def forgot_password(req: PasswordResetRequest):
         logger.warning(f"Failed to send password reset email to {req.email}")
     
     return {"message": success_message, "email_sent": email_sent}
+
+@api_router.options("/auth/reset-password")
+async def reset_password_options():
+    """Handle CORS preflight for reset password"""
+    return {"message": "OK"}
 
 @api_router.post("/auth/reset-password")
 async def reset_password(req: PasswordResetConfirm):
