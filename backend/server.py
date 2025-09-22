@@ -2174,6 +2174,7 @@ async def upload_chat_media(
     user=Depends(get_current_user)
 ):
     """Upload media file for chat messages"""
+    logger.info(f"🚀 UPLOAD ENDPOINT CALLED! chat_id: {chat_id}, user: {user['_id']}")
     logger.info(f"📤 Processing media upload for chat {chat_id} from user {user['_id']}")
     logger.info(f"📤 File details: {file.filename}, {file.content_type}, {file.size if hasattr(file, 'size') else 'unknown size'}")
     
