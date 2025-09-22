@@ -25,7 +25,7 @@ export default function FriendsScreen() {
   React.useEffect(() => { 
     // Debug log removed to prevent infinite loop
     refresh(); 
-  }, [refresh]);
+  }, []); // Remove refresh from dependency array to prevent infinite loop
 
   const addFriend = async () => {
     const email = friendQuery.trim();
