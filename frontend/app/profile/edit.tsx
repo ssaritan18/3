@@ -51,7 +51,8 @@ export default function EditProfileScreen() {
     const immediateLoad = async () => {
       console.log('📂 IMMEDIATE localStorage check...');
       try {
-        const savedProfile = localStorage.getItem('profile_data');
+        const userKey = user?.id || user?.email || 'default';
+        const savedProfile = localStorage.getItem(`profile_data_${userKey}`);
         console.log('📂 Immediate localStorage data:', savedProfile);
         
         if (savedProfile) {
@@ -103,15 +104,20 @@ export default function EditProfileScreen() {
         if (response.ok) {
           const data = await response.json();
           const profile = data.profile;
-          setProfileData({
+          const loadedData = {
             name: profile.name || '',
             bio: profile.bio || '',
             location: profile.location || '',
             website: profile.website || '',
             birth_date: profile.birth_date || '',
             profile_image: profile.profile_image || '',
-          });
-          console.log('✅ Profile loaded from backend and overwrote localStorage!');
+          };
+          setProfileData(loadedData);
+          
+          // Also save to localStorage for UI consistency
+          const userKey = user?.id || user?.email || 'default';
+          localStorage.setItem(`profile_data_${userKey}`, JSON.stringify(loadedData));
+          console.log('✅ Profile loaded from backend and saved to localStorage!');
         }
       } catch (error) {
         console.log('❌ Backend failed, keeping localStorage data:', error);
@@ -123,7 +129,8 @@ export default function EditProfileScreen() {
   const loadFromLocalStorage = async () => {
     console.log('📂 LOADING FROM localStorage...');
     try {
-      const savedProfile = localStorage.getItem('profile_data');
+      const userKey = user?.id || user?.email || 'default';
+      const savedProfile = localStorage.getItem(`profile_data_${userKey}`);
       console.log('📂 localStorage data:', savedProfile);
       
       if (savedProfile) {
@@ -148,7 +155,8 @@ export default function EditProfileScreen() {
         
         console.log('🔄 Setting profile data to:', {
           ...loadedData,
-          profile_image: loadedData.profile_image ? 'IMAGE_WILL_BE_SET' : 'NO_IMAGE_TO_SET'
+          profile_image: loadedData.profile_image ? 'IMAGE_WILL_BE_SET' : 'NO_IMAGE_TO_SET',
+          profileImageUrl: loadedData.profile_image ? loadedData.profile_image.substring(0, 50) + '...' : 'NO_IMAGE'
         });
         
         setProfileData(loadedData);
@@ -181,40 +189,105 @@ export default function EditProfileScreen() {
   const handleSave = async () => {
     try {
       console.log('🚀 SAVE BUTTON CLICKED!');
-      console.log('💾 DIRECT localStorage save starting...');
       
-      // Create save data
-      const dataToSave = {
-        name: profileData.name || 'Your Name',
-        bio: profileData.bio || 'Tell us about yourself...',
-        location: profileData.location || '',
-        website: profileData.website || '',
-        birth_date: profileData.birth_date || '',
-        profile_image: profileData.profile_image || null,
-      };
-      
-      console.log('📊 Data to save:', {
-        name: dataToSave.name,
-        profile_image: dataToSave.profile_image ? 'IMAGE_DATA_READY' : 'NO_IMAGE'
+      // Check if user is authenticated
+      console.log('🔍 Profile Edit token check:', { 
+        hasUser: !!user, 
+        hasToken: !!user?.token, 
+        token: user?.token?.substring(0, 20) + '...',
+        userKeys: user ? Object.keys(user) : 'no user',
+        fullUser: user
       });
-      
-      // Save to localStorage
-      const jsonString = JSON.stringify(dataToSave);
-      localStorage.setItem('profile_data', jsonString);
-      console.log('✅ localStorage.setItem completed!');
-      
-      // Verify save
-      const verification = localStorage.getItem('profile_data');
-      console.log('🔍 Immediate verification:', verification ? 'DATA_FOUND' : 'NO_DATA');
-      
-      // Success message
-      console.log('🎉 About to show success alert...');
-      Alert.alert('Success', 'Profile saved successfully!', [
-        { text: 'OK', onPress: () => {
-          console.log('📱 Alert OK pressed, navigating back...');
-          router.back();
-        }}
-      ]);
+      if (user?.token) {
+        console.log('🌐 API MODE: Saving to backend...');
+        
+        // Create save data
+        const dataToSave = {
+          name: profileData.name || 'Your Name',
+          bio: profileData.bio || 'Tell us about yourself...',
+          location: profileData.location || '',
+          website: profileData.website || '',
+          birth_date: profileData.birth_date || '',
+        };
+        
+        console.log('📊 Data to save:', {
+          name: dataToSave.name,
+          bio: dataToSave.bio
+        });
+        
+        // Save to backend via API
+        const response = await fetch(`${API_BASE_URL}/profile`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${user.token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(dataToSave)
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ API save successful:', result);
+          
+          // Also save to localStorage for UI consistency
+          const userKey = user?.id || user?.email || 'default';
+          const dataToSave = {
+            name: profileData.name || 'Your Name',
+            bio: profileData.bio || 'Tell us about yourself...',
+            location: profileData.location || '',
+            website: profileData.website || '',
+            birth_date: profileData.birth_date || '',
+            profile_image: profileData.profile_image || null,
+          };
+          localStorage.setItem(`profile_data_${userKey}`, JSON.stringify(dataToSave));
+          console.log('💾 Also saved to localStorage for UI consistency');
+          
+          Alert.alert('Success', 'Profile saved successfully!', [
+            { text: 'OK', onPress: () => {
+              console.log('📱 Alert OK pressed, navigating back...');
+              router.back();
+            }}
+          ]);
+        } else {
+          throw new Error(`API save failed: ${response.status}`);
+        }
+      } else {
+        console.log('💾 LOCAL MODE: Saving to localStorage...');
+        
+        // Create save data
+        const dataToSave = {
+          name: profileData.name || 'Your Name',
+          bio: profileData.bio || 'Tell us about yourself...',
+          location: profileData.location || '',
+          website: profileData.website || '',
+          birth_date: profileData.birth_date || '',
+          profile_image: profileData.profile_image || null,
+        };
+        
+        console.log('📊 Data to save:', {
+          name: dataToSave.name,
+          profile_image: dataToSave.profile_image ? 'IMAGE_DATA_READY' : 'NO_IMAGE'
+        });
+        
+        // Save to localStorage
+        const jsonString = JSON.stringify(dataToSave);
+        const userKey = user?.id || user?.email || 'default';
+        localStorage.setItem(`profile_data_${userKey}`, jsonString);
+        console.log('✅ localStorage.setItem completed!');
+        
+        // Verify save
+        const verification = localStorage.getItem(`profile_data_${userKey}`);
+        console.log('🔍 Immediate verification:', verification ? 'DATA_FOUND' : 'NO_DATA');
+        
+        // Success message
+        console.log('🎉 About to show success alert...');
+        Alert.alert('Success', 'Profile saved successfully!', [
+          { text: 'OK', onPress: () => {
+            console.log('📱 Alert OK pressed, navigating back...');
+            router.back();
+          }}
+        ]);
+      }
       
     } catch (error) {
       console.error('❌ SAVE ERROR:', error);

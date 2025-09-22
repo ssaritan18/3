@@ -68,6 +68,8 @@ export default function CommunityScreen() {
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [replyText, setReplyText] = useState('');
+  const [showReplies, setShowReplies] = useState<Record<string, boolean>>({});
+  const [replies, setReplies] = useState<Record<string, any[]>>({});
   
   // Search & Hashtag state
   const [searchQuery, setSearchQuery] = useState('');
@@ -88,7 +90,8 @@ export default function CommunityScreen() {
   // Load profile image from localStorage (sync with Profile tab)
   const loadProfileImage = () => {
     if (Platform.OS === 'web') {
-      const savedProfile = typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('profile_data') : null;
+      const userKey = user?.id || user?.email || 'default';
+      const savedProfile = typeof window !== 'undefined' && window.localStorage ? localStorage.getItem(`profile_data_${userKey}`) : null;
       if (savedProfile) {
         const parsedProfile = JSON.parse(savedProfile);
         setProfileImage(parsedProfile.profile_image || null);
@@ -105,7 +108,8 @@ export default function CommunityScreen() {
   useEffect(() => {
     if (Platform.OS === 'web') {
       const handleStorageChange = (e: StorageEvent) => {
-        if (e.key === 'profile_data') {
+        const userKey = user?.id || user?.email || 'default';
+        if (e.key === `profile_data_${userKey}`) {
           console.log('🔄 Profile data changed, reloading profile image...');
           loadProfileImage();
         }
@@ -525,6 +529,58 @@ const handleCreatePost = async () => {
     }
   };
 
+  // Load replies for a post
+  const loadReplies = async (postId: string) => {
+    try {
+      const token = await ensureAuthToken();
+      if (!token) {
+        showToast('Authentication required to view replies', 'warning');
+        return;
+      }
+
+      const response = await api.get(`/api/community/posts/${postId}/replies`);
+      const data = response.data;
+
+      if (data?.success && Array.isArray(data.replies)) {
+        setReplies(prev => ({
+          ...prev,
+          [postId]: data.replies
+        }));
+        console.log(`✅ Loaded ${data.replies.length} replies for post ${postId}`);
+      }
+    } catch (error) {
+      console.error('❌ Failed to load replies:', error);
+      showToast('Failed to load replies', 'warning');
+    }
+  };
+
+  // Toggle replies visibility
+  const toggleReplies = async (postId: string) => {
+    console.log('🔄 Toggling replies for post:', postId);
+    const isCurrentlyShowing = showReplies[postId];
+    console.log('📊 Current state:', { isCurrentlyShowing, hasReplies: !!replies[postId] });
+    
+    if (!isCurrentlyShowing) {
+      // If not showing, load replies and show them
+      if (!replies[postId]) {
+        console.log('📥 Loading replies for post:', postId);
+        await loadReplies(postId);
+      }
+      console.log('🔄 Setting showReplies to: true');
+      setShowReplies(prev => ({
+        ...prev,
+        [postId]: true
+      }));
+    } else {
+      // If showing, hide them
+      console.log('🔄 Setting showReplies to: false');
+      setShowReplies(prev => ({
+        ...prev,
+        [postId]: false
+      }));
+    }
+  };
+
   // Handle reply
   const handleReply = (post: Post) => {
     setSelectedPost(post);
@@ -633,11 +689,36 @@ const handleCreatePost = async () => {
     <LinearGradient
       colors={['#1a1a2e', '#16213e', '#0f3460']}
       style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header - Updated to match other pages style */}
-      <View style={styles.glowHeader}>
-        <Text style={styles.glowHeaderTitle}>🌟 Community Hub</Text>
-        <Text style={styles.glowHeaderSubtitle}>Share experiences with your ADHD community</Text>
+      {/* Glow Header - Updated to match other pages style */}
+      <LinearGradient
+        colors={['#8B5CF6', '#A855F7', '#EC4899', '#F97316']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.glowHeader, { paddingTop: insets.top + 20 }]}
+      >
+        {/* Community Header with Modern Card Design */}
+        <View style={styles.modernCommunityCard}>
+          <View style={styles.communityHeader}>
+            {/* Icon with Gradient Border */}
+            <View style={styles.iconContainer}>
+              <LinearGradient
+                colors={['#F97316', '#EC4899', '#8B5CF6']}
+                style={styles.iconGradientBorder}
+              >
+                <View style={styles.icon}>
+                  <Text style={styles.iconText}>🌟</Text>
+                </View>
+              </LinearGradient>
       </View>
+            
+            {/* Community Info with Modern Typography */}
+            <View style={styles.headerInfo}>
+              <Text style={styles.communityTitle}>Community Hub</Text>
+              <Text style={styles.communitySubtitle}>Share experiences with your ADHD community</Text>
+            </View>
+          </View>
+        </View>
+      </LinearGradient>
 
       {/* Categories */}
       <ScrollView 
@@ -779,7 +860,16 @@ const handleCreatePost = async () => {
                     <View style={styles.postAvatar}>
                       {getUserAvatar(post.authorId) ? (
                         <View style={styles.avatarImageContainer}>
-                          <Text style={styles.avatarText}>  </Text>
+                          <img 
+                            src={getUserAvatar(post.authorId)} 
+                            alt="Profile" 
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              borderRadius: '50%',
+                              objectFit: 'cover'
+                            }}
+                          />
                         </View>
                       ) : (
                         <Text style={styles.postAvatarText}>
@@ -814,10 +904,18 @@ const handleCreatePost = async () => {
                 <View style={styles.postActions}>
                   <TouchableOpacity 
                     style={styles.actionButton}
+                    onPress={() => toggleReplies(post.id)}
+                  >
+                    <Ionicons name={showReplies[post.id] ? "chevron-up" : "chevron-down"} size={18} color="rgba(255,255,255,0.7)" />
+                    <Text style={styles.actionText}>{post.replies}</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={styles.actionButton}
                     onPress={() => handleReply(post)}
                   >
                     <Ionicons name="chatbubble-outline" size={18} color="rgba(255,255,255,0.7)" />
-                    <Text style={styles.actionText}>{post.replies}</Text>
+                    <Text style={styles.actionText}>Reply</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity 
@@ -845,6 +943,57 @@ const handleCreatePost = async () => {
                     </Text>
                   </TouchableOpacity>
                 </View>
+
+                {/* Replies Section */}
+                {showReplies[post.id] && (
+                  <View style={styles.repliesContainer}>
+                    {console.log('🎯 Rendering replies for post:', post.id, 'showReplies:', showReplies[post.id], 'replies count:', replies[post.id]?.length || 0)}
+                    <View style={styles.repliesHeader}>
+                      <Text style={styles.repliesTitle}>
+                        {replies[post.id]?.length || 0} replies
+                      </Text>
+                      <TouchableOpacity 
+                        style={styles.replyButton}
+                        onPress={() => handleReply(post)}
+                      >
+                        <Ionicons name="add" size={16} color="#8B5CF6" />
+                        <Text style={styles.replyButtonText}>Add Reply</Text>
+                      </TouchableOpacity>
+                    </View>
+                    
+                    {replies[post.id]?.map((reply, index) => (
+                      <View key={reply.id || index} style={styles.replyItem}>
+                        <View style={styles.replyHeader}>
+                          <View style={styles.replyAuthorInfo}>
+                            <View style={styles.replyAvatar}>
+                              <Text style={styles.replyAvatarText}>
+                                {getUserInitials(reply.author || 'U')}
+                              </Text>
+                            </View>
+                            <View style={styles.replyAuthorDetails}>
+                              <Text style={styles.replyAuthorName}>
+                                {reply.author || 'Unknown'}
+                              </Text>
+                              <Text style={styles.replyTime}>
+                                {getRelativeTime(new Date(reply.timestamp || reply.created_at || Date.now()))}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                        <Text style={styles.replyContent}>
+                          {reply.content || reply.text || ''}
+                        </Text>
+                      </View>
+                    )) || []}
+                    
+                    {(!replies[post.id] || replies[post.id].length === 0) && (
+                      <View style={styles.noRepliesContainer}>
+                        <Text style={styles.noRepliesText}>No replies yet</Text>
+                        <Text style={styles.noRepliesSubtext}>Be the first to reply!</Text>
+                      </View>
+                    )}
+                  </View>
+                )}
               </LinearGradient>
             </View>
           ))
@@ -1022,20 +1171,58 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
-  glowHeaderTitle: {
-    fontSize: 28,
+  modernCommunityCard: {
+    borderRadius: 20,
+    padding: 20,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    backdropFilter: 'blur(10px)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    // Remove solid background to let gradient show through
+  },
+  communityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconContainer: {
+    marginRight: 16,
+  },
+  iconGradientBorder: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    padding: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  icon: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconText: {
+    fontSize: 24,
+    color: 'white',
+  },
+  headerInfo: {
+    flex: 1,
+  },
+  communityTitle: {
+    fontSize: 24,
     fontWeight: 'bold',
     color: 'white',
-    textAlign: 'center',
-    marginBottom: 8,
-    textShadowColor: 'rgba(255, 255, 255, 0.3)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
+    marginBottom: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
-  glowHeaderSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-    textAlign: 'center',
+  communitySubtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
   },
   productionToggle: {
@@ -1552,5 +1739,94 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     zIndex: 1000,
+  },
+  repliesContainer: {
+    marginTop: 15,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+  },
+  repliesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  repliesTitle: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  replyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.4)',
+  },
+  replyButtonText: {
+    color: '#8B5CF6',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  replyItem: {
+    marginBottom: 12,
+    paddingLeft: 20,
+  },
+  replyHeader: {
+    marginBottom: 6,
+  },
+  replyAuthorInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  replyAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  replyAvatarText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  replyAuthorDetails: {
+    flex: 1,
+  },
+  replyAuthorName: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  replyTime: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 10,
+  },
+  replyContent: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 14,
+    lineHeight: 18,
+  },
+  noRepliesContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  noRepliesText: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  noRepliesSubtext: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 12,
+    marginTop: 4,
   },
 });

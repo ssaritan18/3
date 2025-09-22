@@ -264,9 +264,54 @@ export default function ChatDetail() {
             </View>
           )}
           
-          <Text style={[styles.messageText, isOwn ? styles.ownMessageText : styles.otherMessageText]}>
-            {normalizedMessage.text}
-          </Text>
+          {/* Render text or media based on message type */}
+          {normalizedMessage.text.includes('📎 Media uploaded -') ? (
+            <View style={styles.mediaContainer}>
+              <Text style={[styles.messageText, isOwn ? styles.ownMessageText : styles.otherMessageText]}>
+                📎 Media uploaded
+              </Text>
+              <TouchableOpacity 
+                style={styles.mediaPreview}
+                onPress={() => {
+                  // Open image in new tab/window
+                  const imageUrl = normalizedMessage.text.replace('📎 Media uploaded - ', '');
+                  const fullUrl = imageUrl.startsWith('http') ? imageUrl : `https://adhders-social-club.onrender.com${imageUrl}`;
+                  console.log('🖼️ Opening image URL:', fullUrl);
+                  window.open(fullUrl, '_blank');
+                }}
+              >
+                <img 
+                  src={(() => {
+                    const imageUrl = normalizedMessage.text.replace('📎 Media uploaded - ', '');
+                    const fullUrl = imageUrl.startsWith('http') ? imageUrl : `https://adhders-social-club.onrender.com${imageUrl}`;
+                    console.log('🖼️ Image URL being used:', fullUrl);
+                    console.log('🖼️ Original text:', normalizedMessage.text);
+                    console.log('🖼️ Extracted URL:', imageUrl);
+                    return fullUrl;
+                  })()} 
+                  alt="Uploaded media" 
+                  style={styles.mediaImage}
+                  onError={(e) => {
+                    console.log('❌ Image load error details:', {
+                      error: e,
+                      src: e.currentTarget.src,
+                      originalText: normalizedMessage.text,
+                      extractedUrl: normalizedMessage.text.replace('📎 Media uploaded - ', ''),
+                      fullUrl: e.currentTarget.src
+                    });
+                    e.currentTarget.style.display = 'none';
+                  }}
+                  onLoad={() => {
+                    console.log('✅ Image loaded successfully:', e.currentTarget.src);
+                  }}
+                />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <Text style={[styles.messageText, isOwn ? styles.ownMessageText : styles.otherMessageText]}>
+              {normalizedMessage.text}
+            </Text>
+          )}
           
           {isOwn && (
             <View style={styles.ownMessageTimeContainer}>
@@ -785,5 +830,20 @@ const styles = StyleSheet.create({
     padding: 4,
     borderWidth: 1,
     borderColor: '#EC4899',
+  },
+  mediaContainer: {
+    marginTop: 4,
+  },
+  mediaPreview: {
+    marginTop: 8,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  mediaImage: {
+    width: 200,
+    height: 200,
+    objectFit: 'cover',
   },
 });

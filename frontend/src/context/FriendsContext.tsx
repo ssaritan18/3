@@ -234,12 +234,7 @@ export function FriendsProvider({ children }: { children: React.ReactNode }) {
     // Global debug access for console
     if (typeof window !== 'undefined') {
       (window as any).friendsDebug = { friends, requests, posts, presence };
-      console.log("🔍 Friends Debug Updated:", { 
-        friendsCount: friends?.length || 0, 
-        friends: friends?.slice(0, 2) || [],
-        friendsType: typeof friends,
-        friendsIsArray: Array.isArray(friends)
-      });
+      // Debug log removed to prevent infinite loop
     }
   }, [friends, requests, posts, presence]);
 
@@ -315,7 +310,7 @@ export function FriendsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { if (PERSIST_ENABLED && !syncEnabled && hydrated) saveJSON(KEYS.posts, posts); }, [posts, hydrated, syncEnabled]);
 
   const sendRequest = async (email: string, note?: string) => {
-    console.log("📧 Sending friend request:", { email, syncEnabled, hasToken: !!token });
+    console.log("📧 Sending friend request:", { email, syncEnabled, hasToken: !!token, token: token?.substring(0, 20) + "..." });
     
     if (syncEnabled && token) {
       try {
@@ -323,8 +318,16 @@ export function FriendsProvider({ children }: { children: React.ReactNode }) {
         const response = await api.post("/api/friends/request", { email }); // Updated to new format
         console.log("✅ API call successful:", response.data);
         
-        // Don't need to refresh immediately - real-time events will update the UI
-        console.log("✅ Friend request sent successfully via API - waiting for real-time updates");
+        // Update local state to show the request was sent
+        setRequests((prev) => [...prev, { 
+          id: response.data.request_id || uid(), 
+          from: email, 
+          email, 
+          note,
+          status: 'sent' // Mark as sent
+        }]);
+        
+        console.log("✅ Friend request sent successfully via API and local state updated");
         return;
       } catch (error) {
         console.error("❌ API friend request failed:", error);

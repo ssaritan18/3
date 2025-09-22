@@ -12,6 +12,7 @@ export type User = {
   name: string;
   email?: string;
   photoBase64?: string | null;
+  token?: string;
 };
 
 export type Palette = { primary: string; secondary: string; accent: string };
@@ -78,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await setToken(t);
             try {
               const me = await api.get("/api/me");
-              const u: User = { name: me.data.name, email: me.data.email, photoBase64: me.data.photo_base64 };
+              const u: User = { name: me.data.name, email: me.data.email, photoBase64: me.data.photo_base64, token: t };
               setUser(u); setAuthed(true);
               if (PERSIST_ENABLED) await saveJSON(KEYS.user, u);
             } catch (error) {
@@ -124,7 +125,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
         
         console.log("📧 Email verification required - user should check email");
-        // Don't set token or auto-login - user needs to verify email first
+        
+        // Set user state even without token for UI consistency
+        const newUser: User = { 
+          name: name.trim() || "You", 
+          email: email.trim(),
+          id: res.data?.user_id  // Store user ID from response
+        };
+        setUser(newUser);
+        setAuthed(true);
+        if (PERSIST_ENABLED) await saveJSON(KEYS.user, newUser);
+        console.log("✅ User state set after registration");
+        
+        // Auto-login after registration for better UX
+        console.log("🔄 Auto-login after registration...");
+        try {
+          const loginRes = await api.post("/api/auth/login", { email, password });
+          if (loginRes.data?.access_token) {
+            const token = loginRes.data.access_token;
+            console.log('🔐 Auto-login successful, setting token');
+            await setToken(token);
+            
+            // Update user with token
+            const userWithToken = { ...newUser, token };
+            setUser(userWithToken);
+            if (PERSIST_ENABLED) await saveJSON(KEYS.user, userWithToken);
+            console.log('✅ User updated with token after auto-login');
+          }
+        } catch (loginError) {
+          console.warn('⚠️ Auto-login failed, user can login manually:', loginError);
+        }
         
       } catch (e: any) {
         console.error("❌ Register API call failed:", e);
@@ -174,15 +204,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (profileRes.data) {
               const userData = { 
                 name: profileRes.data.name || email, 
-                email: profileRes.data.email || email 
+                email: profileRes.data.email || email,
+                token: token  // ✅ Add token to user object
               };
               setUser(userData);
               await saveJSON(KEYS.user, userData);
-              console.log('✅ User profile set and authenticated');
+              console.log('✅ User profile set and authenticated with token');
             }
           } catch (profileError) {
             console.warn("⚠️ Profile fetch failed, using email as name:", profileError);
-            const userData = { name: email, email };
+            const userData = { name: email, email, token: token };  // ✅ Add token here too
             setUser(userData);
             await saveJSON(KEYS.user, userData);
             console.log('✅ Fallback user profile set and authenticated');

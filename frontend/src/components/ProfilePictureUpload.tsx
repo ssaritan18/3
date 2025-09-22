@@ -64,6 +64,7 @@ export function ProfilePictureUpload({ currentImageUrl, onUploadComplete }: Prof
   };
 
   const uploadImage = async (base64Data: string, fileName: string) => {
+    console.log('🔍 ProfilePictureUpload mode check:', { mode, isAuthenticated, hasToken: !!user?.token });
     if (mode === 'sync' && isAuthenticated && user?.token) {
       setUploading(true);
       try {

@@ -23,13 +23,7 @@ export default function FriendsScreen() {
   const safeRequests = requests || [];
 
   React.useEffect(() => { 
-    console.log("🔍 FriendsScreen - State Debug:", {
-      friendsLength: safeFriends.length,
-      requestsLength: safeRequests.length,
-      friendsType: typeof friends,
-      requestsType: typeof requests,
-      isArray: Array.isArray(friends)
-    });
+    // Debug log removed to prevent infinite loop
     refresh(); 
   }, [refresh]);
 

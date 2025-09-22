@@ -26,7 +26,7 @@ export function RuntimeConfigProvider({ children, token }: { children: React.Rea
   const isProduction = process.env.NODE_ENV === "production" || isPreviewBackend;
 
   const [syncEnabledState, setSyncEnabledState] = useState<boolean>(true);
-  const syncEnabled = isProduction ? true : syncEnabledState;
+  const syncEnabled = true; // Force sync mode for testing
   const [wsEnabled, setWsEnabledState] = useState(true);
   const [webSocket, setWebSocket] = useState<WebSocket | null>(null);
 

@@ -72,14 +72,16 @@ export default function ProfileScreen() {
     const loadProfileData = async () => {
       try {
         console.log('📂 Loading profile data from AsyncStorage...');
-        const savedProfile = await AsyncStorage.getItem('profile_data');
+        const userKey = user?.id || user?.email || 'default';
+        const savedProfile = await AsyncStorage.getItem(`profile_data_${userKey}`);
         
         if (savedProfile) {
           try {
             const parsedProfile = JSON.parse(savedProfile);
             console.log('✅ Profile data loaded:', {
               name: parsedProfile.name,
-              hasProfileImage: parsedProfile.profile_image ? 'YES' : 'NO'
+              hasProfileImage: parsedProfile.profile_image ? 'YES' : 'NO',
+              profileImageUrl: parsedProfile.profile_image ? parsedProfile.profile_image.substring(0, 50) + '...' : 'NO_IMAGE'
             });
             setProfileData({
               profile_image: parsedProfile.profile_image || null,
