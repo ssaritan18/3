@@ -363,6 +363,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   // Fetch messages when backendChats change
   useEffect(() => {
+    console.log("🔍 ChatContext: useEffect triggered", { 
+      backendChatsLength: backendChats.length, 
+      mode, 
+      isAuthenticated 
+    });
+    
     if (backendChats.length > 0 && mode === "sync" && isAuthenticated) {
       console.log("📥 ChatContext: Fetching messages for all chats...");
       const fetchAllMessages = async () => {
@@ -372,6 +378,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         }
       };
       fetchAllMessages();
+    } else {
+      console.log("❌ ChatContext: Not fetching messages", { 
+        reason: backendChats.length === 0 ? "No chats" : 
+                mode !== "sync" ? "Not sync mode" : 
+                !isAuthenticated ? "Not authenticated" : "Unknown"
+      });
     }
   }, [backendChats, mode, isAuthenticated, fetchMessages]);
 
@@ -805,13 +817,17 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     createGroup: async (title: string, members: string[] = []) => {
       if (mode === "sync" && token) {
         try {
+          console.log("📡 Creating group chat:", title);
           const newChat = await chatAPI.createGroupChat(title);
+          console.log("✅ Backend returned chat:", newChat);
+          
           const convertedChat = convertBackendChat(newChat);
+          console.log("🔄 Converted chat:", convertedChat);
           
           setBackendChats(prev => [convertedChat, ...prev]);
           setBackendMessages(prev => ({ ...prev, [convertedChat.id]: [] }));
           
-          console.log("✅ Chat: Created new GROUP chat:", title);
+          console.log("✅ Chat: Created new GROUP chat:", title, "ID:", convertedChat.id);
           return convertedChat.id;
         } catch (error) {
           console.error("❌ Chat: Failed to create group chat:", error);
