@@ -34,6 +34,8 @@ type AuthContextType = {
   register: (name: string, email: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, password: string) => Promise<void>;
   resetCredentials: (email?: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -341,6 +343,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const forgotPassword = async (email: string) => {
+    console.log("🔑 Forgot password initiated for:", email);
+    
+    try {
+      const response = await api.post('/api/auth/forgot-password', { email });
+      console.log("✅ Forgot password email sent successfully");
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ Forgot password error:", error);
+      
+      if (error.response?.status === 404) {
+        throw new Error("Email address not found. Please check your email address and try again.");
+      } else if (error.response?.status === 429) {
+        throw new Error("Too many requests. Please wait a few minutes before trying again.");
+      } else if (error.code === 'NETWORK_ERROR' || error.message?.includes('timeout')) {
+        throw new Error("Connection timeout. Please check your internet connection and try again.");
+      } else if (error.response?.status >= 500) {
+        throw new Error("Server error. Please try again later.");
+      } else {
+        throw new Error(error.response?.data?.detail || error.message || "Failed to send reset email. Please try again.");
+      }
+    }
+  };
+
+  const resetPassword = async (token: string, password: string) => {
+    console.log("🔑 Reset password initiated");
+    
+    try {
+      const response = await api.post('/api/auth/reset-password', { token, password });
+      console.log("✅ Password reset successfully");
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ Reset password error:", error);
+      
+      if (error.response?.status === 400) {
+        throw new Error("Invalid or expired reset token. Please request a new password reset.");
+      } else if (error.response?.status === 422) {
+        throw new Error("Password does not meet requirements. Please choose a stronger password.");
+      } else if (error.code === 'NETWORK_ERROR' || error.message?.includes('timeout')) {
+        throw new Error("Connection timeout. Please check your internet connection and try again.");
+      } else if (error.response?.status >= 500) {
+        throw new Error("Server error. Please try again later.");
+      } else {
+        throw new Error(error.response?.data?.detail || error.message || "Failed to reset password. Please try again.");
+      }
+    }
+  };
+
   const signOut = async () => {
     console.log("🚪 signOut called");
     
@@ -377,6 +427,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register, 
     login, 
     loginWithGoogle,
+    forgotPassword,
+    resetPassword,
     resetCredentials, 
     signOut 
   }), [isAuthed, user, loading, palette, token]);

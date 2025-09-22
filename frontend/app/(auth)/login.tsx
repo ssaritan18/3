@@ -161,27 +161,31 @@ export default function Login() {
           </LinearGradient>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.glowLinkBtn} onPress={handleForgotPassword}>
+        <TouchableOpacity style={styles.glowLinkBtn} onPress={() => router.push('/(auth)/forgot-password')}>
           <Text style={styles.glowLinkText}>Forgot password?</Text>
         </TouchableOpacity>
 
-        {/* Divider */}
-        <View style={styles.dividerContainer}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
-          <View style={styles.dividerLine} />
-        </View>
+        {/* Divider - Only show on mobile */}
+        {Platform.OS !== 'web' && (
+          <View style={styles.dividerContainer}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+        )}
 
-        {/* Google Sign-In Button */}
-        <View style={styles.googleSignInContainer}>
-          <GoogleSigninButton
-            style={styles.googleSignInButton}
-            size={GoogleSigninButton.Size.Wide}
-            color={GoogleSigninButton.Color.Dark}
-            onPress={handleGoogleSignIn}
-            disabled={isLoading}
-          />
-        </View>
+        {/* Google Sign-In Button - Only show on mobile */}
+        {Platform.OS !== 'web' && (
+          <View style={styles.googleSignInContainer}>
+            <GoogleSigninButton
+              style={styles.googleSignInButton}
+              size={GoogleSigninButton.Size.Wide}
+              color={GoogleSigninButton.Color.Dark}
+              onPress={handleGoogleSignIn}
+              disabled={isLoading}
+            />
+          </View>
+        )}
 
         <TouchableOpacity style={styles.glowBackBtn} onPress={() => router.back()}>
           <Text style={styles.glowBackText}>Back to Welcome</Text>

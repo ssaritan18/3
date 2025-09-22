@@ -1,51 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 
-export default function ResetPassword() {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+export default function ForgotPassword() {
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState('');
-  const { resetPassword } = useAuth();
-  const { token: urlToken } = useLocalSearchParams();
+  const { forgotPassword } = useAuth();
 
-  useEffect(() => {
-    if (urlToken) {
-      setToken(urlToken as string);
-    }
-  }, [urlToken]);
-
-  const handleResetPassword = async () => {
-    if (!password.trim()) {
-      Alert.alert('Error', 'Please enter a new password');
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      Alert.alert('Error', 'Please enter your email address');
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-
-    if (!token) {
-      Alert.alert('Error', 'Invalid or missing reset token');
+    if (!email.includes('@')) {
+      Alert.alert('Error', 'Please enter a valid email address');
       return;
     }
 
     setLoading(true);
     try {
-      await resetPassword(token, password);
+      await forgotPassword(email);
       Alert.alert(
         'Success', 
-        'Your password has been reset successfully. You can now sign in with your new password.',
+        'Password reset instructions have been sent to your email address. Please check your inbox and follow the instructions to reset your password.',
         [
           {
             text: 'OK',
@@ -54,8 +35,8 @@ export default function ResetPassword() {
         ]
       );
     } catch (error: any) {
-      console.error('Reset password error:', error);
-      Alert.alert('Error', error.message || 'Failed to reset password. Please try again.');
+      console.error('Forgot password error:', error);
+      Alert.alert('Error', error.message || 'Failed to send reset email. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -77,42 +58,28 @@ export default function ResetPassword() {
           >
             <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
-          <Text style={styles.title}>Reset Password</Text>
+          <Text style={styles.title}>Forgot Password</Text>
         </View>
 
         <View style={styles.content}>
           <View style={styles.iconContainer}>
-            <Ionicons name="key" size={60} color="rgba(255,255,255,0.8)" />
+            <Ionicons name="lock-closed" size={60} color="rgba(255,255,255,0.8)" />
           </View>
 
           <Text style={styles.subtitle}>
-            Enter your new password below. Make sure it's secure and easy to remember.
+            Don't worry! Enter your email address and we'll send you instructions to reset your password.
           </Text>
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed" size={20} color="rgba(255,255,255,0.6)" style={styles.inputIcon} />
+              <Ionicons name="mail" size={20} color="rgba(255,255,255,0.6)" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="New password"
+                placeholder="Enter your email address"
                 placeholderTextColor="rgba(255,255,255,0.6)"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed" size={20} color="rgba(255,255,255,0.6)" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm new password"
-                placeholderTextColor="rgba(255,255,255,0.6)"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
               />
@@ -120,7 +87,7 @@ export default function ResetPassword() {
 
             <TouchableOpacity
               style={[styles.submitButton, loading && styles.submitButtonDisabled]}
-              onPress={handleResetPassword}
+              onPress={handleForgotPassword}
               disabled={loading}
             >
               <LinearGradient
@@ -128,7 +95,7 @@ export default function ResetPassword() {
                 style={styles.submitButtonGradient}
               >
                 <Text style={styles.submitButtonText}>
-                  {loading ? 'Resetting...' : 'Reset Password'}
+                  {loading ? 'Sending...' : 'Send Reset Instructions'}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
