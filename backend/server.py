@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Header, Depends, Request, Query, WebSocket, WebSocketDisconnect, Form, UploadFile, File
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.websockets import WebSocketState
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -310,6 +311,11 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+# Mount static files for uploads
+upload_dir = os.getenv('UPLOAD_DIR', './uploads')
+logger.info(f"📁 Mounting static files from: {upload_dir}")
+app.mount("/uploads", StaticFiles(directory=upload_dir), name="uploads")
 # Health check endpoint for deployment
 @app.get("/health")
 async def health_check():
@@ -333,6 +339,23 @@ async def health_check():
             "error": str(e),
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
+
+# Debug endpoint for upload directory info
+@app.get("/debug/upload-info")
+async def debug_upload_info():
+    """Debug endpoint to check upload directory configuration"""
+    upload_dir = os.getenv('UPLOAD_DIR', './uploads')
+    chat_dir = os.path.join(upload_dir, 'chat')
+    
+    return {
+        "upload_dir": upload_dir,
+        "chat_dir": chat_dir,
+        "upload_dir_exists": os.path.exists(upload_dir),
+        "chat_dir_exists": os.path.exists(chat_dir),
+        "upload_dir_absolute": os.path.abspath(upload_dir),
+        "chat_dir_absolute": os.path.abspath(chat_dir),
+        "current_working_dir": os.getcwd()
+    }
 
 # Ads Configuration Endpoint (Feature Flag for Ad Display)
 @app.get("/api/config/ads")
