@@ -68,6 +68,8 @@ export default function CommunityScreen() {
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [replyText, setReplyText] = useState('');
+  const [showMoreOptionsModal, setShowMoreOptionsModal] = useState(false);
+  const [selectedPostForOptions, setSelectedPostForOptions] = useState<Post | null>(null);
   const [showReplies, setShowReplies] = useState<Record<string, boolean>>({});
   const [replies, setReplies] = useState<Record<string, any[]>>({});
   
@@ -719,7 +721,7 @@ const handleCreatePost = async () => {
       </LinearGradient>
 
 
-      {/* Categories */}
+      {/* Categories - Compact */}
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false}
@@ -745,7 +747,7 @@ const handleCreatePost = async () => {
         ))}
       </ScrollView>
 
-      {/* Search Bar */}
+      {/* Search Bar - Compact */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
           <Ionicons name="search" size={20} color="rgba(255,255,255,0.6)" style={styles.searchIcon} />
@@ -890,15 +892,16 @@ const handleCreatePost = async () => {
                     </View>
                   </View>
                   
-                  {/* Delete button - only show for own posts */}
-                  {post.authorId === (user?.id || user?.email) && (
-                    <TouchableOpacity 
-                      style={styles.deleteButton}
-                      onPress={() => handleDeletePost(post.id)}
-                    >
-                      <Ionicons name="ellipsis-horizontal" size={20} color="rgba(255,255,255,0.7)" />
-                    </TouchableOpacity>
-                  )}
+                  {/* More Options Menu */}
+                  <TouchableOpacity 
+                    style={styles.moreOptionsButton}
+                    onPress={() => {
+                      setSelectedPostForOptions(post);
+                      setShowMoreOptionsModal(true);
+                    }}
+                  >
+                    <Ionicons name="ellipsis-horizontal" size={20} color="rgba(255,255,255,0.7)" />
+                  </TouchableOpacity>
                 </View>
 
                 {/* Post Content */}
@@ -1068,6 +1071,65 @@ const handleCreatePost = async () => {
         </View>
       )}
 
+      {/* More Options Modal */}
+      {showMoreOptionsModal && selectedPostForOptions && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.moreOptionsModal}>
+            <LinearGradient
+              colors={['rgba(139, 92, 246, 0.95)', 'rgba(168, 85, 247, 0.95)']}
+              style={styles.moreOptionsModalGradient}
+            >
+              <View style={styles.moreOptionsHeader}>
+                <Text style={styles.moreOptionsTitle}>Post Options</Text>
+                <TouchableOpacity onPress={() => setShowMoreOptionsModal(false)}>
+                  <Ionicons name="close" size={24} color="white" />
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.moreOptionsContent}>
+                {selectedPostForOptions.authorId === (user?.id || user?.email) ? (
+                  // Owner options
+                  <TouchableOpacity 
+                    style={styles.moreOptionsItem}
+                    onPress={() => {
+                      handleDeletePost(selectedPostForOptions.id);
+                      setShowMoreOptionsModal(false);
+                    }}
+                  >
+                    <Ionicons name="trash" size={20} color="#FF6B6B" />
+                    <Text style={[styles.moreOptionsText, { color: '#FF6B6B' }]}>Delete Post</Text>
+                  </TouchableOpacity>
+                ) : (
+                  // Other user options
+                  <>
+                    <TouchableOpacity 
+                      style={styles.moreOptionsItem}
+                      onPress={() => {
+                        // TODO: Implement block user
+                        setShowMoreOptionsModal(false);
+                      }}
+                    >
+                      <Ionicons name="person-remove" size={20} color="#FF6B6B" />
+                      <Text style={[styles.moreOptionsText, { color: '#FF6B6B' }]}>Block User</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={styles.moreOptionsItem}
+                      onPress={() => {
+                        // TODO: Implement report user
+                        setShowMoreOptionsModal(false);
+                      }}
+                    >
+                      <Ionicons name="flag" size={20} color="#FFA500" />
+                      <Text style={[styles.moreOptionsText, { color: '#FFA500' }]}>Report User</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
+            </LinearGradient>
+          </View>
+        </View>
+      )}
+
       {/* Toast Notification */}
       {toastNotification && (
         <View style={[
@@ -1224,8 +1286,8 @@ const styles = StyleSheet.create({
   },
   categoriesContainer: {
     paddingHorizontal: 15,
-    paddingVertical: 15,
-    marginBottom: 5,
+    paddingVertical: 4,
+    marginBottom: 4,
   },
   categoriesContent: {
     paddingRight: 15,
@@ -1257,10 +1319,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   searchContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(139, 92, 246, 0.2)",
+    paddingHorizontal: 15,
+    paddingVertical: 2,
+    marginBottom: 4,
   },
   searchBar: {
     flexDirection: "row",
@@ -1424,10 +1485,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  deleteButton: {
+  moreOptionsButton: {
     padding: 8,
     borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  moreOptionsModal: {
+    width: '80%',
+    maxWidth: 300,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  moreOptionsModalGradient: {
+    padding: 0,
+  },
+  moreOptionsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.2)',
+  },
+  moreOptionsTitle: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  moreOptionsContent: {
+    padding: 10,
+  },
+  moreOptionsItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 8,
+  },
+  moreOptionsText: {
+    color: 'white',
+    fontSize: 16,
+    marginLeft: 12,
+    fontWeight: '500',
   },
   postAuthorInfo: {
     flexDirection: 'row',

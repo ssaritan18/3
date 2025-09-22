@@ -20,7 +20,7 @@ export default function ChatDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { chats, messagesByChat, sendText, markRead, reactMessage } = useChat();
   const { mode } = useRuntimeConfig();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   
   // Debug token state
   React.useEffect(() => {
@@ -37,6 +37,8 @@ export default function ChatDetail() {
   const [lastTap, setLastTap] = React.useState<{messageId: string, time: number} | null>(null); // Double-tap detection
   const [animatedHearts, setAnimatedHearts] = React.useState<Record<string, Animated.Value>>({}); // Animation values
   const [showInviteModal, setShowInviteModal] = React.useState(false); // Invitation code modal
+  const [showToast, setShowToast] = React.useState(false); // Copy feedback toast
+  const [toastMessage, setToastMessage] = React.useState(''); // Toast message
   const chat = chats.find((c) => c.id === id);
   const msgs = messagesByChat[id || ""] || [];
   
@@ -539,7 +541,9 @@ export default function ChatDetail() {
                           style={styles.copyButton}
                           onPress={() => {
                             navigator.clipboard.writeText(chat.inviteCode || '');
-                            Alert.alert('Copied!', 'Invitation code copied to clipboard');
+                            setToastMessage('Invitation code has been copied');
+                            setShowToast(true);
+                            setTimeout(() => setShowToast(false), 3000);
                           }}
                         >
                           <Ionicons name="copy" size={20} color="#8B5CF6" />
@@ -559,9 +563,47 @@ export default function ChatDetail() {
                       </Text>
                     </View>
                   )}
+                  
+                  {/* Delete Chat Option - Only for chat owner */}
+                  {chat?.created_by === (user?.id || user?.email) && (
+                    <View style={styles.deleteChatSection}>
+                      <TouchableOpacity 
+                        style={styles.deleteChatButton}
+                        onPress={() => {
+                          Alert.alert(
+                            'Delete Chat',
+                            'Are you sure you want to delete this chat? This action cannot be undone.',
+                            [
+                              { text: 'Cancel', style: 'cancel' },
+                              { 
+                                text: 'Delete', 
+                                style: 'destructive',
+                                onPress: () => {
+                                  // TODO: Implement delete chat API call
+                                  setShowInviteModal(false);
+                                  // Navigate back to chat list
+                                  router.push('/(tabs)/chat/');
+                                }
+                              }
+                            ]
+                          );
+                        }}
+                      >
+                        <Ionicons name="trash" size={20} color="#FF6B6B" />
+                        <Text style={styles.deleteChatText}>Delete Chat</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
               </LinearGradient>
             </View>
+          </View>
+        )}
+
+        {/* Toast Notification */}
+        {showToast && (
+          <View style={styles.toastContainer}>
+            <Text style={styles.toastText}>{toastMessage}</Text>
           </View>
         )}
       </KeyboardAvoidingView>
@@ -995,6 +1037,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginTop: 12,
+  },
+  deleteChatSection: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  deleteChatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 107, 107, 0.3)',
+  },
+  deleteChatText: {
+    color: '#FF6B6B',
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 12,
+  },
+  toastContainer: {
+    position: 'absolute',
+    bottom: 100,
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    zIndex: 1001,
+  },
+  toastText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
   },
   mediaContainer: {
     marginTop: 4,
