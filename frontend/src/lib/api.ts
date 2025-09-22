@@ -32,7 +32,12 @@ console.log("🔗 API Base URL:", API_BASE_URL);
 export const api = axios.create({
   baseURL: BACKEND_BASE_URL, 
   timeout: 30000,
-  headers: { "Content-Type": "application/json" },
+  headers: { 
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization"
+  },
 });
 // 4) setAuthToken fonksiyonu — AuthContext’in burayı çağırıyor
 let authToken: string | null = null;
