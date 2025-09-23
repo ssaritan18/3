@@ -11,19 +11,25 @@ export default function ForgotPassword() {
   const { forgotPassword } = useAuth();
 
   const handleForgotPassword = async () => {
+    console.log("🔑 handleForgotPassword called with email:", email);
+    
     if (!email.trim()) {
+      console.log("❌ Email is empty");
       Alert.alert('Error', 'Please enter your email address');
       return;
     }
 
     if (!email.includes('@')) {
+      console.log("❌ Email format is invalid");
       Alert.alert('Error', 'Please enter a valid email address');
       return;
     }
 
+    console.log("✅ Email validation passed, calling forgotPassword function");
     setLoading(true);
     try {
       await forgotPassword(email);
+      console.log("✅ forgotPassword function completed successfully");
       Alert.alert(
         'Success', 
         'Password reset instructions have been sent to your email address. Please check your inbox and follow the instructions to reset your password.',
@@ -35,7 +41,7 @@ export default function ForgotPassword() {
         ]
       );
     } catch (error: any) {
-      console.error('Forgot password error:', error);
+      console.error('❌ Forgot password error:', error);
       Alert.alert('Error', error.message || 'Failed to send reset email. Please try again.');
     } finally {
       setLoading(false);
