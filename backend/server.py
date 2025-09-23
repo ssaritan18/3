@@ -4539,6 +4539,11 @@ app.include_router(api_router)
 async def root():
     return {"message": "ADHDers Backend API is running!", "status": "ok"}
 
+@app.head("/")
+async def root_head():
+    """Handle HEAD requests for health checks"""
+    return {"message": "OK"}
+
 @app.get("/api/test")
 async def test():
     return {"message": "API is working!", "status": "ok"}
