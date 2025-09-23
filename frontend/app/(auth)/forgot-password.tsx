@@ -93,7 +93,10 @@ export default function ForgotPassword() {
 
             <TouchableOpacity
               style={[styles.submitButton, loading && styles.submitButtonDisabled]}
-              onPress={handleForgotPassword}
+              onPress={() => {
+                console.log("🔴 BUTTON CLICKED! handleForgotPassword will be called");
+                handleForgotPassword();
+              }}
               disabled={loading}
             >
               <LinearGradient
