@@ -345,13 +345,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const forgotPassword = async (email: string) => {
     console.log("🔑 Forgot password initiated for:", email);
+    console.log("🔗 API Base URL:", api.defaults.baseURL);
+    console.log("📡 Making POST request to:", `${api.defaults.baseURL}/api/auth/forgot-password`);
     
     try {
       const response = await api.post('/api/auth/forgot-password', { email });
       console.log("✅ Forgot password email sent successfully");
+      console.log("📧 Response data:", response.data);
       return response.data;
     } catch (error: any) {
       console.error("❌ Forgot password error:", error);
+      console.error("❌ Error details:", {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
       
       if (error.response?.status === 404) {
         throw new Error("Email address not found. Please check your email address and try again.");
