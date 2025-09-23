@@ -2964,15 +2964,11 @@ app.add_middleware(
     ],
     allow_origin_regex=lan_origin_regex if ALLOW_LAN_ORIGINS else None,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
-# Handle OPTIONS requests for CORS preflight
-@app.options("/{path:path}")
-async def options_handler(path: str):
-    """Handle CORS preflight OPTIONS requests"""
-    return {"message": "OK"}
+# OPTIONS handler removed - FastAPI CORS middleware handles this automatically
 
 # =====================================================
 # REAL-TIME FRIEND REQUEST & CHAT EVENT SYSTEM
