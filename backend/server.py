@@ -112,6 +112,7 @@ SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "noreply@adhders.com")
 EMAIL_ENABLED = bool(SMTP_USERNAME and SMTP_PASSWORD)
+logger.info(f"📧 Email Configuration: SMTP_USERNAME={SMTP_USERNAME}, SMTP_PASSWORD={'***' if SMTP_PASSWORD else 'None'}, EMAIL_ENABLED={EMAIL_ENABLED}")
 
 # Email Templates
 email_template = jinja2.Template("""
