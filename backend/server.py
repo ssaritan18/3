@@ -2968,6 +2968,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Handle OPTIONS requests for CORS preflight
+@app.options("/{path:path}")
+async def options_handler(path: str):
+    """Handle CORS preflight OPTIONS requests"""
+    return {"message": "OK"}
+
 # =====================================================
 # REAL-TIME FRIEND REQUEST & CHAT EVENT SYSTEM
 # =====================================================
