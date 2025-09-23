@@ -1203,18 +1203,27 @@ async def verify_email(token: str):
 @api_router.post("/auth/forgot-password")
 async def forgot_password(req: PasswordResetRequest):
     """Send password reset email"""
+    logger.info(f"🔑 Forgot password request received for: {req.email}")
+    logger.info(f"📧 EMAIL_ENABLED: {EMAIL_ENABLED}")
+    logger.info(f"📧 SMTP_USERNAME: {SMTP_USERNAME}")
+    logger.info(f"📧 SMTP_PASSWORD: {'***' if SMTP_PASSWORD else 'None'}")
+    
     user = await db.users.find_one({"email": req.email.lower()})
     
     # Always return success message for security (don't reveal if email exists)
     success_message = "If this email exists in our system, you will receive a password reset link shortly."
     
     if not user:
-        logger.info(f"Password reset requested for non-existent email: {req.email}")
+        logger.info(f"❌ Password reset requested for non-existent email: {req.email}")
         return {"message": success_message}
+    
+    logger.info(f"✅ User found for email: {req.email}")
     
     # Create reset token (expires in 1 hour)
     reset_token = str(uuid.uuid4())
     expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+    
+    logger.info(f"🔑 Reset token created: {reset_token[:8]}...")
     
     # Store reset token
     await db.users.update_one(
@@ -1228,11 +1237,16 @@ async def forgot_password(req: PasswordResetRequest):
         }
     )
     
+    logger.info(f"💾 Reset token stored in database")
+    
     # Send reset email
+    logger.info(f"📧 Attempting to send password reset email to: {req.email}")
     email_sent = await send_password_reset_email(req.email.lower(), reset_token)
     
+    logger.info(f"📧 Email send result: {email_sent}")
+    
     if EMAIL_ENABLED and not email_sent:
-        logger.warning(f"Failed to send password reset email to {req.email}")
+        logger.warning(f"❌ Failed to send password reset email to {req.email}")
     
     return {"message": success_message, "email_sent": email_sent}
 
