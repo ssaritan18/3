@@ -2964,7 +2964,7 @@ app.add_middleware(
     ],
     allow_origin_regex=lan_origin_regex if ALLOW_LAN_ORIGINS else None,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
 
