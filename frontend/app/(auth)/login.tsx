@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, TextInput, Alert, Switch } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from "../../src/context/AuthContext";
-// Google Sign-In only for mobile platforms
+// Google Sign-In only for mobile platforms - Web'de tamamen devre dışı
 let GoogleSigninButton: any = null;
 if (Platform.OS !== 'web') {
   try {
@@ -11,6 +11,9 @@ if (Platform.OS !== 'web') {
   } catch (error) {
     console.log('Google Sign-In not available on this platform');
   }
+} else {
+  // Web'de Google Sign-In tamamen devre dışı
+  GoogleSigninButton = () => null;
 }
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
