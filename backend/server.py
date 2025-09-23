@@ -2952,7 +2952,11 @@ lan_origin_regex = (
 
 # CORS middleware removed - Let browser handle CORS naturally
 
-# OPTIONS handler removed - FastAPI CORS middleware handles this automatically
+# Handle OPTIONS requests for CORS preflight
+@app.options("/{path:path}")
+async def options_handler(path: str):
+    """Handle CORS preflight OPTIONS requests"""
+    return {"message": "OK"}
 
 # =====================================================
 # REAL-TIME FRIEND REQUEST & CHAT EVENT SYSTEM
