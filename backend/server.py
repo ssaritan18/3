@@ -2950,23 +2950,7 @@ lan_origin_regex = (
     r"|localhost)(?::\d+)?"
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "https://adhd-connect-2.preview.emergentagent.com",
-        "https://adhderssocialclub4.vercel.app",  # Vercel production domain
-        "https://adhderssocialclub4-h5a0zo2hb-ssaritans-projects.vercel.app",  # Vercel deployment domain
-        "http://localhost:3000",  # For development
-        "http://localhost:19006", # For Expo web
-        "http://localhost:8081",  # For Expo web
-        "http://localhost:8082",  # For Expo web
-        "exp://localhost:19000"   # For Expo mobile
-    ],
-    allow_origin_regex=lan_origin_regex if ALLOW_LAN_ORIGINS else None,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
-)
+# CORS middleware removed - Let browser handle CORS naturally
 
 # OPTIONS handler removed - FastAPI CORS middleware handles this automatically
 
