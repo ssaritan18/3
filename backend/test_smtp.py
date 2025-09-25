@@ -96,8 +96,8 @@ async def test_forgot_password_flow():
     try:
         # Password reset email template
         reset_token = "test-token-12345"
-        base_url = os.getenv("BASE_URL", "https://adhd-connect-2.preview.emergentagent.com")
-        reset_url = f"{base_url}/auth/reset-password?token={reset_token}"
+        base_url = os.getenv("BASE_URL", "https://adhderssocialclub4.vercel.app")
+        reset_url = f"{base_url}/reset-password?token={reset_token}"
         
         content = f"""
         <h2>Password Reset Request - TEST</h2>

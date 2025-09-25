@@ -189,8 +189,8 @@ async def send_email(to_email: str, subject: str, content: str) -> bool:
 async def send_verification_email(user_email: str, token: str) -> bool:
     """Send email verification email"""
     # Use environment variable for base URL
-    base_url = os.getenv("BASE_URL", "https://adhd-connect-2.preview.emergentagent.com")
-    verify_url = f"{base_url}/api/auth/verify?token={token}"
+    base_url = os.getenv("BASE_URL", "https://adhderssocialclub4.vercel.app")
+    verify_url = f"{base_url}/verify-email?token={token}"
     
     content = f"""
     <h2>Welcome to ADHDers Social Club! 🎉</h2>
@@ -206,8 +206,8 @@ async def send_verification_email(user_email: str, token: str) -> bool:
 
 async def send_password_reset_email(user_email: str, token: str) -> bool:
     """Send password reset email"""
-    base_url = os.getenv("BASE_URL", "https://adhd-connect-2.preview.emergentagent.com")
-    reset_url = f"{base_url}/auth/reset-password?token={token}"
+    base_url = os.getenv("BASE_URL", "https://adhderssocialclub4.vercel.app")
+    reset_url = f"{base_url}/reset-password?token={token}"
     
     content = f"""
     <h2>Password Reset Request</h2>
