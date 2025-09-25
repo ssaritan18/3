@@ -2964,13 +2964,19 @@ lan_origin_regex = (
     r"|localhost)(?::\d+)?"
 )
 
-# CORS middleware removed - Let browser handle CORS naturally
-
-# Handle OPTIONS requests for CORS preflight
-@app.options("/{path:path}")
-async def options_handler(path: str):
-    """Handle CORS preflight OPTIONS requests"""
-    return {"message": "OK"}
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:8081", 
+        "https://adhderssocialclub4.vercel.app",
+        "https://adhd-connect-2.preview.emergentagent.com"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # =====================================================
 # REAL-TIME FRIEND REQUEST & CHAT EVENT SYSTEM
