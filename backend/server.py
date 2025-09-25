@@ -4117,54 +4117,7 @@ app.include_router(subscriptions_router)
 async def test_api():
     return {"message": "API is working!", "status": "ok"}
 
-# Direct register endpoint for testing
-@app.post("/api/auth/register")
-async def direct_register(req: RegisterRequest):
-    existing = await db.users.find_one({"email": req.email.lower()})
-    if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    uid = str(uuid.uuid4())
-    
-    # Create verification token (expires in 24 hours)
-    verification_token = str(uuid.uuid4())
-    expires_at = datetime.now(timezone.utc) + timedelta(hours=24)
-    
-    # Hash password
-    hashed_password = hash_password(req.password)
-    
-    # Create user document
-    user_doc = {
-        "_id": uid,
-        "name": req.name,
-        "email": req.email.lower(),
-        "password_hash": hashed_password,
-        "is_verified": False,
-        "verification_token": verification_token,
-        "verification_expires": expires_at,
-        "created_at": datetime.now(timezone.utc),
-        "updated_at": datetime.now(timezone.utc)
-    }
-    
-    # Insert user
-    await db.users.insert_one(user_doc)
-    
-    # Send verification email
-    email_sent = False
-    if EMAIL_ENABLED:
-        try:
-            email_sent = await send_verification_email(req.email, verification_token)
-        except Exception as e:
-            logger.error(f"Failed to send verification email: {e}")
-    
-    if EMAIL_ENABLED and not email_sent:
-        logger.warning(f"Failed to send verification email to {req.email}")
-    
-    return {
-        "message": "Registration successful! Please check your email to verify your account.",
-        "email_sent": email_sent,
-        "user_id": uid
-    }
+# Duplicate endpoint removed - using main /api/auth/register endpoint
 
 # Configure logging
 logging.basicConfig(
