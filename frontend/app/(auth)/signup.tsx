@@ -75,8 +75,8 @@ export default function SignUp() {
         colors={['#1a1a2e', '#16213e', '#8B5CF6', '#A855F7']}
         style={styles.container}
       >
-        <Text style={styles.glowTitle}>Create your tester account</Text>
-        <Text style={styles.glowSubtitle}>Offline-only. Stored locally on your device.</Text>
+        <Text style={styles.glowTitle}>Create your account</Text>
+        <Text style={styles.glowSubtitle}>Join ADHDers Social Club and connect with the community.</Text>
 
         <View style={styles.glowInputBox}>
           <Text style={styles.glowLabel}>Name</Text>
