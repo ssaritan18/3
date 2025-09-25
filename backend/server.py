@@ -1124,7 +1124,13 @@ async def auth_google(payload: GoogleAuthRequest):
 
 # --- Auth (Email+Password) ---
 @api_router.post("/auth/register")
-async def auth_register(req: RegisterRequest):
+async def auth_register(request: Request):
+    try:
+        body = await request.json()
+        req = RegisterRequest(**body)
+    except Exception as e:
+        logger.error(f"❌ JSON parsing error: {e}")
+        raise HTTPException(status_code=400, detail="Invalid JSON format")
     existing = await db.users.find_one({"email": req.email.lower()})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
