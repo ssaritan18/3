@@ -107,7 +107,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Email Configuration
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "noreply@adhders.com")
@@ -174,7 +174,7 @@ async def send_email(to_email: str, subject: str, content: str) -> bool:
             message,
             hostname=SMTP_HOST,
             port=SMTP_PORT,
-            start_tls=True,
+            use_tls=True,  # Use SSL instead of STARTTLS for port 465
             username=SMTP_USERNAME,
             password=SMTP_PASSWORD,
         )

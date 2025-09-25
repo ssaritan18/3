@@ -64,7 +64,7 @@ async def test_smtp_connection():
             message,
             hostname=SMTP_HOST,
             port=SMTP_PORT,
-            start_tls=True,
+            use_tls=True,  # Use SSL instead of STARTTLS for port 465
             username=SMTP_USERNAME,
             password=SMTP_PASSWORD,
         )
@@ -122,7 +122,7 @@ async def test_forgot_password_flow():
             message,
             hostname=SMTP_HOST,
             port=SMTP_PORT,
-            start_tls=True,
+            use_tls=True,  # Use SSL instead of STARTTLS for port 465
             username=SMTP_USERNAME,
             password=SMTP_PASSWORD,
         )
