@@ -186,6 +186,25 @@ async def send_email(to_email: str, subject: str, content: str) -> bool:
         logger.error(f"❌ Failed to send email to {to_email}: {e}")
         return False
 
+async def send_welcome_email(user_email: str, user_name: str) -> bool:
+    """Send welcome email to new user"""
+    content = f"""
+    <h2>Welcome to ADHDers Social Club! 🎉</h2>
+    <p>Hi {user_name},</p>
+    <p>Welcome to our amazing community! We're thrilled to have you join us.</p>
+    <p>Here's what you can do next:</p>
+    <ul>
+        <li>✨ Complete your profile setup</li>
+        <li>🤝 Connect with other members</li>
+        <li>💬 Join community discussions</li>
+        <li>📱 Download our mobile app</li>
+    </ul>
+    <p>We're here to support you on your journey. Don't hesitate to reach out if you have any questions!</p>
+    <p>Best regards,<br>The ADHDers Social Club Team</p>
+    """
+    
+    return await send_email(user_email, "Welcome to ADHDers Social Club! 🎉", content)
+
 async def send_verification_email(user_email: str, token: str) -> bool:
     """Send email verification email"""
     # Use environment variable for base URL
@@ -1156,15 +1175,19 @@ async def auth_register(request: Request):
     }
     await db.users.insert_one(doc)
     
-    # Send verification email
-    email_sent = await send_verification_email(req.email.lower(), verification_token)
+    # Send welcome email
+    welcome_sent = await send_welcome_email(req.email.lower(), req.name)
     
-    if EMAIL_ENABLED and not email_sent:
+    # Send verification email
+    verification_sent = await send_verification_email(req.email.lower(), verification_token)
+    
+    if EMAIL_ENABLED and not verification_sent:
         logger.warning(f"Failed to send verification email to {req.email}")
     
     return {
-        "message": "Registration successful! Please check your email to verify your account.",
-        "email_sent": email_sent,
+        "message": "Registration successful! Welcome to ADHDers Social Club! 🎉 Please check your email to verify your account.",
+        "email_sent": verification_sent,
+        "welcome_sent": welcome_sent,
         "user_id": uid
     }
 
