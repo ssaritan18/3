@@ -188,22 +188,47 @@ async def send_email(to_email: str, subject: str, content: str) -> bool:
 
 async def send_welcome_email(user_email: str, user_name: str) -> bool:
     """Send welcome email to new user"""
+    base_url = os.getenv("BASE_URL", "https://adhderssocialclub4.vercel.app")
+    profile_url = f"{base_url}/profile"
+    community_url = f"{base_url}/community"
+    
     content = f"""
-    <h2>Welcome to ADHDers Social Club! 🎉</h2>
-    <p>Hi {user_name},</p>
-    <p>Welcome to our amazing community! We're thrilled to have you join us.</p>
-    <p>Here's what you can do next:</p>
-    <ul>
-        <li>✨ Complete your profile setup</li>
-        <li>🤝 Connect with other members</li>
-        <li>💬 Join community discussions</li>
-        <li>📱 Download our mobile app</li>
-    </ul>
-    <p>We're here to support you on your journey. Don't hesitate to reach out if you have any questions!</p>
-    <p>Best regards,<br>The ADHDers Social Club Team</p>
+    <!DOCTYPE html>
+    <html>
+      <body style="font-family: Arial, sans-serif; line-height:1.5; color:#333;">
+        <div style="max-width:600px; margin:0 auto; padding:20px; text-align:center;">
+          <img src="https://i.imgur.com/MDe0CK9.png" alt="ADHDers Social Club Logo" width="120" height="120" style="margin-bottom:20px; border-radius:50%;" />
+          <h1>Welcome to ADHDers Social Club! 🎉</h1>
+          <p>Hi {user_name},</p>
+
+          <p>
+            We're thrilled to have you on board! You've just joined a community designed for creative, bold, and neurodivergent minds like yours.
+          </p>
+
+          <div style="margin: 30px 0;">
+            <a href="{profile_url}" 
+               style="display:inline-block; background:#5C6BC0; color:#fff; padding:12px 24px; text-decoration:none; border-radius:6px; margin:5px;">
+              Complete Your Profile
+            </a>
+            <a href="{community_url}" 
+               style="display:inline-block; background:#26A69A; color:#fff; padding:12px 24px; text-decoration:none; border-radius:6px; margin:5px;">
+              Find Your Community
+            </a>
+          </div>
+
+          <p>📱 Track your productivity with gamified tools that make progress fun.<br>
+             💡 Boost your healthy dopamine by celebrating small wins every day.<br>
+             🤝 Find your neurodivergent friends and feel supported.</p>
+
+          <p>This is more than just an app – it's your safe space to grow, connect, and thrive.</p>
+
+          <p style="margin-top:40px;">Best regards,<br>The ADHDers Social Club Team</p>
+        </div>
+      </body>
+    </html>
     """
     
-    return await send_email(user_email, "Welcome to ADHDers Social Club! 🎉", content)
+    return await send_email(user_email, "🎉 Welcome to ADHDers Social Club – Your Journey Starts Here!", content)
 
 async def send_verification_email(user_email: str, token: str) -> bool:
     """Send email verification email"""
