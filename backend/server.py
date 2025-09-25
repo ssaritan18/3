@@ -2970,8 +2970,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:8081", 
-        "https://adhderssocialclub4.vercel.app",
-        "https://adhd-connect-2.preview.emergentagent.com"
+        "https://adhderssocialclub4.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
