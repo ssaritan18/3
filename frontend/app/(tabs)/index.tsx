@@ -242,19 +242,20 @@ export default function HomeScreen() {
                   </LinearGradient>
                 </View>
 
-                <Text style={styles.sectionTitle}>📝 Your Tasks ({tasks.length})</Text>
-                
-                {/* Tasks List */}
-                {tasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onToggle={() => increment(task.id)}
-                    onRemove={() => remove(task.id)}
-                    onPress={() => {}}
-                  />
-                ))}
-              </View>
+                <View style={styles.tasksSection}>
+                  <Text style={styles.sectionTitle}>📝 Your Tasks ({tasks.length})</Text>
+                  
+                  {/* Tasks List */}
+                  {tasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onToggle={() => increment(task.id)}
+                      onRemove={() => remove(task.id)}
+                      onPress={() => {}}
+                    />
+                  ))}
+                </View>
             </ScrollView>
         ) : activeTab === 'self-check' ? (
           <ScrollView 
