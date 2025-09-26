@@ -2855,9 +2855,9 @@ async def get_user_streak(current_user: dict = Depends(get_current_user)):
         streak = user_data.get("streak", {})
         current_streak = streak.get("current_streak", 0)
         best_streak = streak.get("best_streak", 0)
-    
-    # Enhanced streak data with recovery mechanics
-    streak_data = {
+        
+        # Enhanced streak data with recovery mechanics
+        streak_data = {
         "current_streak": current_streak,
         "best_streak": best_streak,
         "streak_start_date": (datetime.now() - timedelta(days=current_streak)).isoformat(),
@@ -2876,17 +2876,18 @@ async def get_user_streak(current_user: dict = Depends(get_current_user)):
             "encouragement": get_streak_encouragement(current_streak),
             "reward_points": current_streak * 10
         }
-    }
-    
-    # Calculate milestones
-    milestones = [3, 7, 14, 30, 60, 90, 180, 365]
-    for milestone in milestones:
-        if current_streak >= milestone:
-            streak_data["milestones_reached"].append(milestone)
-        elif streak_data["next_milestone"] is None:
-            streak_data["next_milestone"] = milestone
-            
-    return streak_data
+        }
+        
+        # Calculate milestones
+        milestones = [3, 7, 14, 30, 60, 90, 180, 365]
+        for milestone in milestones:
+            if current_streak >= milestone:
+                streak_data["milestones_reached"].append(milestone)
+            elif streak_data["next_milestone"] is None:
+                streak_data["next_milestone"] = milestone
+                
+        return streak_data
+        
     except Exception as e:
         logger.error(f"Error fetching user streak: {e}")
         # Fallback to mock data
