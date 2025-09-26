@@ -24,6 +24,31 @@ interface AssessmentResult {
   adhd_type: 'primarily_inattentive' | 'primarily_hyperactive' | 'combined' | 'mild_traits';
 }
 
+// Color coding functions for assessment results
+const getCategoryColor = (score: number) => {
+  if (score >= 90) return '#8B0000'; // Very High - Dark Red
+  if (score >= 80) return '#FF3547'; // High - Red
+  if (score >= 70) return '#FF6B35'; // High-Medium - Orange-Red
+  if (score >= 60) return '#FF8C00'; // Medium-High - Dark Orange
+  if (score >= 50) return '#FFD700'; // Medium - Yellow
+  if (score >= 40) return '#4A90E2'; // Medium-Low - Blue
+  if (score >= 30) return '#32CD32'; // Low-Medium - Green
+  if (score >= 20) return '#00C851'; // Low - Dark Green
+  return '#228B22'; // Very Low - Forest Green
+};
+
+const getCategoryLevel = (score: number) => {
+  if (score >= 90) return { level: 'Very High', description: 'Significant ADHD traits' };
+  if (score >= 80) return { level: 'High', description: 'Strong ADHD traits' };
+  if (score >= 70) return { level: 'High-Medium', description: 'Moderate to strong traits' };
+  if (score >= 60) return { level: 'Medium-High', description: 'Moderate traits' };
+  if (score >= 50) return { level: 'Medium', description: 'Some ADHD traits' };
+  if (score >= 40) return { level: 'Medium-Low', description: 'Mild traits' };
+  if (score >= 30) return { level: 'Low-Medium', description: 'Very mild traits' };
+  if (score >= 20) return { level: 'Low', description: 'Minimal traits' };
+  return { level: 'Very Low', description: 'No significant traits' };
+};
+
 interface PersonalizedContent {
   id: string;
   title: string;
@@ -492,14 +517,49 @@ const AssessmentFollowupContent: React.FC<AssessmentFollowupContentProps> = ({
           Based on your assessment • {assessmentResult.adhd_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Profile
         </Text>
         
-        {/* Score Overview */}
+        {/* Enhanced Score Overview */}
         <View style={styles.scoreOverview}>
-          <Text style={styles.overallScoreText}>Overall Score: {assessmentResult.overall_score}/100</Text>
+          <View style={[styles.overallScoreCard, { borderColor: getCategoryColor(assessmentResult.overall_score) }]}>
+            <Text style={styles.overallScoreText}>{assessmentResult.overall_score}%</Text>
+            <Text style={styles.overallScoreLabel}>ADHD Traits Present</Text>
+            
+            {/* Level Information */}
+            <View style={styles.levelInfoContainer}>
+              <Text style={[styles.levelText, { color: getCategoryColor(assessmentResult.overall_score) }]}>
+                {getCategoryLevel(assessmentResult.overall_score).level}
+              </Text>
+              <Text style={styles.levelDescription}>
+                {getCategoryLevel(assessmentResult.overall_score).description}
+              </Text>
+            </View>
+            
+            {/* Progress Bar */}
+            <View style={styles.progressBarContainer}>
+              <View style={styles.progressBarBackground}>
+                <View 
+                  style={[
+                    styles.progressBarFill, 
+                    { 
+                      width: `${assessmentResult.overall_score}%`,
+                      backgroundColor: getCategoryColor(assessmentResult.overall_score)
+                    }
+                  ]} 
+                />
+              </View>
+              <Text style={styles.progressBarLabel}>
+                {assessmentResult.overall_score}/100
+              </Text>
+            </View>
+          </View>
+          
           <View style={styles.categoryScores}>
             {Object.entries(assessmentResult.categories).map(([category, score]) => (
-              <View key={category} style={styles.categoryScore}>
+              <View key={category} style={[styles.categoryScore, { borderLeftColor: getCategoryColor(score) }]}>
                 <Text style={styles.categoryName}>{category.charAt(0).toUpperCase() + category.slice(1)}</Text>
-                <Text style={styles.categoryScoreValue}>{score}</Text>
+                <View style={styles.categoryScoreRow}>
+                  <Text style={[styles.categoryScoreValue, { color: getCategoryColor(score) }]}>{score}</Text>
+                  <Text style={styles.categoryLevel}>{getCategoryLevel(score).level}</Text>
+                </View>
               </View>
             ))}
           </View>
@@ -580,12 +640,59 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(139, 92, 246, 0.3)',
     width: '100%',
   },
+  overallScoreCard: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 16,
+    borderWidth: 2,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   overallScoreText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 32,
     fontWeight: '800',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  overallScoreLabel: {
+    color: '#ccc',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  levelInfoContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  levelText: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  levelDescription: {
+    color: '#ccc',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  progressBarContainer: {
+    width: '100%',
+  },
+  progressBarBackground: {
+    height: 8,
+    backgroundColor: '#333',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  progressBarLabel: {
+    color: '#ccc',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 8,
   },
   categoryScores: {
     flexDirection: 'row',
@@ -593,7 +700,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   categoryScore: {
-    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    padding: 12,
     marginBottom: 8,
     width: '30%',
   },
@@ -602,11 +712,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     textAlign: 'center',
+    marginBottom: 8,
+  },
+  categoryScoreRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   categoryScoreValue: {
-    color: '#8B5CF6',
     fontSize: 16,
     fontWeight: '800',
+  },
+  categoryLevel: {
+    color: '#ccc',
+    fontSize: 10,
+    fontWeight: '600',
   },
   contentCard: {
     marginBottom: 16,
