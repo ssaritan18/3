@@ -2682,36 +2682,68 @@ async def get_all_achievements():
 
 @api_router.get("/user/achievements")
 async def get_user_achievements(current_user: dict = Depends(get_current_user)):
-    """Get user's unlocked achievements with enhanced Phase 3 features"""
-    # Mock user achievement data with more realistic progress
-    unlocked = ["first_day", "task_starter", "focus_first"] if random.random() > 0.3 else ["first_day"]
-    
-    user_achievements = []
-    all_achievements = await get_all_achievements()
-    
-    for achievement in all_achievements["achievements"]:
-        # Simulate realistic progress for different achievements
-        progress = 0
-        max_progress = 1
+    """Get user's unlocked achievements from database"""
+    try:
+        user_id = current_user["id"]
         
-        if achievement["id"] == "task_starter":
-            progress = random.randint(6, 10)
-            max_progress = 10
-        elif achievement["id"] == "week_warrior":
-            progress = random.randint(3, 6)
-            max_progress = 7
-        elif achievement["id"] == "task_machine":
-            progress = random.randint(20, 80)
-            max_progress = 100
-        elif achievement["id"] == "pomodoro_pro":
-            progress = random.randint(2, 8)
-            max_progress = 10
-        elif achievement["id"] == "challenge_champion":
-            progress = random.randint(0, 1)
+        # Get user achievements from database
+        user_data = await users_collection.find_one(
+            {"_id": ObjectId(user_id)},
+            {"achievements": 1, "stats": 1, "streak": 1, "points": 1}
+        )
+        
+        if not user_data:
+            # Create new user achievements
+            achievements_data = []
+            await users_collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": {"achievements": achievements_data}}
+            )
+            user_data = {"achievements": achievements_data}
+        
+        user_achievements = user_data.get("achievements", [])
+        stats = user_data.get("stats", {})
+        streak = user_data.get("streak", {})
+        points = user_data.get("points", {})
+        
+        # Get all available achievements
+        all_achievements = await get_all_achievements()
+        
+        # Calculate progress for each achievement based on real data
+        for achievement in all_achievements["achievements"]:
+            achievement_id = achievement["id"]
+            progress = 0
             max_progress = 1
-        elif achievement["id"] == "friend_collector":
-            progress = random.randint(2, 7)
-            max_progress = 10
+            unlocked = False
+            
+            # Find user's progress for this achievement
+            user_achievement = next((a for a in user_achievements if a.get("id") == achievement_id), None)
+            
+            if user_achievement:
+                progress = user_achievement.get("progress", 0)
+                unlocked = user_achievement.get("unlocked", False)
+            else:
+                # Calculate progress based on current stats
+                if achievement_id == "task_starter":
+                    progress = min(stats.get("tasks_completed", 0), 10)
+                    max_progress = 10
+                elif achievement_id == "week_warrior":
+                    progress = min(streak.get("current_streak", 0), 7)
+                    max_progress = 7
+                elif achievement_id == "task_machine":
+                    progress = min(stats.get("tasks_completed", 0), 100)
+                    max_progress = 100
+                elif achievement_id == "pomodoro_pro":
+                    # Count focus sessions from points breakdown
+                    focus_sessions = points.get("breakdown", {}).get("focus_sessions", 0) // 150  # 150 points per session
+                    progress = min(focus_sessions, 10)
+                    max_progress = 10
+                elif achievement_id == "challenge_champion":
+                    progress = 1 if stats.get("challenges_completed", 0) > 0 else 0
+                    max_progress = 1
+                elif achievement_id == "friend_collector":
+                    progress = min(stats.get("friends_count", 0), 10)
+                    max_progress = 10
         
         user_achievement = {
             **achievement,
@@ -2998,84 +3030,191 @@ async def get_profile_completion(current_user: dict = Depends(get_current_user))
 # Phase 3: Weekly Challenges System
 @api_router.get("/challenges/weekly")
 async def get_weekly_challenges(current_user: dict = Depends(get_current_user)):
-    """Get current week's ADHD-friendly challenges"""
-    challenges = [
-        {
-            "id": "focus_marathon",
-            "name": "Focus Marathon",
-            "icon": "🏃‍♂️",
-            "description": "Complete 5 focus sessions this week",
-            "category": "focus",
-            "difficulty": "medium",
-            "progress": random.randint(1, 4),
-            "max_progress": 5,
-            "reward": {
-                "points": 500,
-                "badge": "Marathon Runner",
-                "description": "You've mastered sustained focus!"
+    """Get current week's ADHD-friendly challenges from database"""
+    try:
+        user_id = current_user["id"]
+        
+        # Get user challenges from database
+        user_data = await users_collection.find_one(
+            {"_id": ObjectId(user_id)},
+            {"challenges": 1, "stats": 1, "points": 1}
+        )
+        
+        if not user_data:
+            # Create new user challenges
+            challenges_data = {
+                "weekly": [],
+                "completed_this_week": 0,
+                "last_week_reset": datetime.now(timezone.utc).isoformat()
+            }
+            await users_collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": {"challenges": challenges_data}}
+            )
+            user_data = {"challenges": challenges_data}
+        
+        challenges_data = user_data.get("challenges", {})
+        stats = user_data.get("stats", {})
+        points = user_data.get("points", {})
+        
+        # Define available challenges
+        available_challenges = [
+            {
+                "id": "focus_marathon",
+                "name": "Focus Marathon",
+                "icon": "🏃‍♂️",
+                "description": "Complete 5 focus sessions this week",
+                "category": "focus",
+                "difficulty": "medium",
+                "max_progress": 5,
+                "reward": {
+                    "points": 500,
+                    "badge": "Marathon Runner",
+                    "description": "You've mastered sustained focus!"
+                },
+                "deadline": (datetime.now() + timedelta(days=7)).isoformat(),
+                "tips": [
+                    "Start with 15-minute sessions",
+                    "Take breaks between sessions",
+                    "Use your hyperfocus when it comes naturally"
+                ]
             },
-            "deadline": (datetime.now() + timedelta(days=7)).isoformat(),
-            "tips": [
-                "Start with 15-minute sessions",
-                "Take breaks between sessions",
-                "Use your hyperfocus when it comes naturally"
-            ]
-        },
-        {
-            "id": "task_tornado",
-            "name": "Task Tornado",
-            "icon": "🌪️",
-            "description": "Complete 15 tasks in 3 days",
-            "category": "tasks",
-            "difficulty": "hard",
-            "progress": random.randint(3, 12),
-            "max_progress": 15,
-            "reward": {
-                "points": 750,
-                "badge": "Tornado",
-                "description": "You swept through those tasks!"
+            {
+                "id": "task_tornado",
+                "name": "Task Tornado",
+                "icon": "🌪️",
+                "description": "Complete 15 tasks in 3 days",
+                "category": "tasks",
+                "difficulty": "hard",
+                "max_progress": 15,
+                "reward": {
+                    "points": 750,
+                    "badge": "Tornado",
+                    "description": "You swept through those tasks!"
+                },
+                "deadline": (datetime.now() + timedelta(days=3)).isoformat(),
+                "tips": [
+                    "Break big tasks into smaller ones",
+                    "Use body doubling if possible",
+                    "Ride your motivation waves"
+                ]
             },
-            "deadline": (datetime.now() + timedelta(days=3)).isoformat(),
-            "tips": [
-                "Break big tasks into smaller ones",
-                "Use body doubling if possible",
-                "Ride your motivation waves"
-            ]
-        },
-        {
-            "id": "community_connector",
-            "name": "Community Connector",
-            "icon": "🤝",
-            "description": "Help 3 community members this week",
-            "category": "community",
-            "difficulty": "easy",
-            "progress": random.randint(0, 2),
-            "max_progress": 3,
-            "reward": {
-                "points": 300,
-                "badge": "Helper",
-                "description": "Your support means everything!"
-            },
-            "deadline": (datetime.now() + timedelta(days=7)).isoformat(),
-            "tips": [
-                "Share your own ADHD experiences",
-                "Offer encouragement on posts",
-                "Answer questions from your expertise"
-            ]
+            {
+                "id": "community_connector",
+                "name": "Community Connector",
+                "icon": "🤝",
+                "description": "Help 3 community members this week",
+                "category": "community",
+                "difficulty": "easy",
+                "max_progress": 3,
+                "reward": {
+                    "points": 300,
+                    "badge": "Helper",
+                    "description": "Your support means everything!"
+                },
+                "deadline": (datetime.now() + timedelta(days=7)).isoformat(),
+                "tips": [
+                    "Share your own ADHD experiences",
+                    "Offer encouragement on posts",
+                    "Answer questions from your expertise"
+                ]
+            }
+        ]
+        
+        # Calculate progress for each challenge based on real data
+        challenges = []
+        completed_this_week = 0
+        
+        for challenge in available_challenges:
+            challenge_id = challenge["id"]
+            progress = 0
+            
+            # Calculate progress based on current stats
+            if challenge_id == "focus_marathon":
+                # Count focus sessions from this week
+                focus_sessions = points.get("breakdown", {}).get("focus_sessions", 0) // 150  # 150 points per session
+                progress = min(focus_sessions, challenge["max_progress"])
+            elif challenge_id == "task_tornado":
+                # Count tasks completed this week
+                weekly_tasks = stats.get("weekly_stats", {}).get("tasks", 0)
+                progress = min(weekly_tasks, challenge["max_progress"])
+            elif challenge_id == "community_connector":
+                # Count community interactions this week
+                weekly_posts = stats.get("weekly_stats", {}).get("posts", 0)
+                progress = min(weekly_posts, challenge["max_progress"])
+            
+            # Check if challenge is completed
+            if progress >= challenge["max_progress"]:
+                completed_this_week += 1
+            
+            challenges.append({
+                **challenge,
+                "progress": progress
+            })
+        
+        return {
+            "challenges": challenges,
+            "week_start": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).isoformat(),
+            "completed_this_week": completed_this_week,
+            "total_points_available": sum(c["reward"]["points"] for c in challenges)
         }
-    ]
-    
-    return {
-        "challenges": challenges,
-        "week_start": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).isoformat(),
-        "completed_this_week": random.randint(0, 2),
-        "total_points_available": sum(c["reward"]["points"] for c in challenges)
-    }
+    except Exception as e:
+        logger.error(f"Error fetching weekly challenges: {e}")
+        # Fallback to basic challenges
+        return {
+            "challenges": [],
+            "week_start": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).isoformat(),
+            "completed_this_week": 0,
+            "total_points_available": 0
+        }
 
 @api_router.post("/challenges/{challenge_id}/complete")
 async def complete_challenge(challenge_id: str, current_user: dict = Depends(get_current_user)):
-    """Mark a challenge as completed (mock implementation)"""
-    # Mock challenge completion
+    """Mark a challenge as completed and award points"""
+    try:
+        user_id = current_user["id"]
+        
+        # Get challenge details
+        challenges_response = await get_weekly_challenges(current_user)
+        challenge = next((c for c in challenges_response["challenges"] if c["id"] == challenge_id), None)
+        
+        if not challenge:
+            raise HTTPException(status_code=404, detail="Challenge not found")
+        
+        if challenge["progress"] < challenge["max_progress"]:
+            raise HTTPException(status_code=400, detail="Challenge not yet completed")
+        
+        # Award points for challenge completion
+        points_earned = challenge["reward"]["points"]
+        
+        await users_collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {
+                "$inc": {
+                    "points.total_points": points_earned,
+                    "points.lifetime_earned": points_earned,
+                    "points.today_earned": points_earned,
+                    "points.breakdown.challenges": points_earned,
+                    "challenges.completed_this_week": 1
+                },
+                "$set": {
+                    "points.updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        return {
+            "challenge_id": challenge_id,
+            "points_earned": points_earned,
+            "message": f"Challenge '{challenge['name']}' completed! You earned {points_earned} points!",
+            "badge": challenge["reward"]["badge"],
+            "description": challenge["reward"]["description"]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error completing challenge: {e}")
+        raise HTTPException(status_code=500, detail="Failed to complete challenge")
     rewards = {
         "focus_marathon": {"points": 500, "badge": "Marathon Runner"},
         "task_tornado": {"points": 750, "badge": "Tornado"},
