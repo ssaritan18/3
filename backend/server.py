@@ -2741,7 +2741,7 @@ async def get_user_achievements(current_user: dict = Depends(get_current_user)):
         }
         user_achievements.append(user_achievement)
 
-    return {"achievements": user_achievements}
+        return {"achievements": user_achievements}
     except Exception as e:
         logger.error(f"Error fetching user achievements: {e}")
         # Fallback to mock data
