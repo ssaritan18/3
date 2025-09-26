@@ -3090,10 +3090,13 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:8081", 
-        "https://adhderssocialclub4.vercel.app"
+        "https://adhderssocialclub4.vercel.app",
+        "https://adhderssocialclub4-j5djdfp5a-ssaritans-projects.vercel.app",
+        "https://adhderssocialclub4-646q7lxbg-ssaritans-projects.vercel.app",
+        "https://*.vercel.app"  # Allow all Vercel subdomains
     ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -3101,7 +3104,16 @@ app.add_middleware(
 @app.options("/{path:path}")
 async def options_handler(path: str):
     """Handle CORS preflight OPTIONS requests"""
-    return {"message": "OK"}
+    from fastapi.responses import Response
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Credentials": "true",
+        }
+    )
 
 # =====================================================
 # REAL-TIME FRIEND REQUEST & CHAT EVENT SYSTEM
