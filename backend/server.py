@@ -2687,7 +2687,7 @@ async def get_user_achievements(current_user: dict = Depends(get_current_user)):
         user_id = current_user["id"]
         
         # Get user achievements from database
-        user_data = await users_collection.find_one(
+        user_data = await db.users.find_one(
             {"_id": ObjectId(user_id)},
             {"achievements": 1, "stats": 1, "streak": 1, "points": 1}
         )
@@ -2695,7 +2695,7 @@ async def get_user_achievements(current_user: dict = Depends(get_current_user)):
         if not user_data:
             # Create new user achievements
             achievements_data = []
-            await users_collection.update_one(
+            await db.users.update_one(
                 {"_id": ObjectId(user_id)},
                 {"$set": {"achievements": achievements_data}}
             )
@@ -2756,6 +2756,10 @@ async def get_user_achievements(current_user: dict = Depends(get_current_user)):
         user_achievements.append(user_achievement)
 
     return {"achievements": user_achievements}
+    except Exception as e:
+        logger.error(f"Error fetching user achievements: {e}")
+        # Fallback to mock data
+        return {"achievements": []}
 
 @api_router.get("/user/points")
 async def get_user_points(current_user: dict = Depends(get_current_user)):
@@ -2764,7 +2768,7 @@ async def get_user_points(current_user: dict = Depends(get_current_user)):
         user_id = current_user["id"]
         
         # Get user points from database
-        user_points = await users_collection.find_one(
+        user_points = await db.users.find_one(
             {"_id": ObjectId(user_id)},
             {"points": 1, "achievements": 1, "focus_sessions": 1, "tasks": 1}
         )
@@ -2786,7 +2790,7 @@ async def get_user_points(current_user: dict = Depends(get_current_user)):
                     "challenges": 0
                 }
             }
-            await users_collection.update_one(
+            await db.users.update_one(
                 {"_id": ObjectId(user_id)},
                 {"$set": {"points": points_data}}
             )
@@ -2842,7 +2846,7 @@ async def get_user_streak(current_user: dict = Depends(get_current_user)):
         user_id = current_user["id"]
         
         # Get user streak from database
-        user_data = await users_collection.find_one(
+        user_data = await db.users.find_one(
             {"_id": ObjectId(user_id)},
             {"streak": 1, "points": 1}
         )
@@ -2856,7 +2860,7 @@ async def get_user_streak(current_user: dict = Depends(get_current_user)):
                 "streak_start_date": None,
                 "total_days_active": 0
             }
-            await users_collection.update_one(
+            await db.users.update_one(
                 {"_id": ObjectId(user_id)},
                 {"$set": {"streak": streak_data}}
             )
@@ -2897,6 +2901,29 @@ async def get_user_streak(current_user: dict = Depends(get_current_user)):
             streak_data["next_milestone"] = milestone
             
     return streak_data
+    except Exception as e:
+        logger.error(f"Error fetching user streak: {e}")
+        # Fallback to mock data
+        return {
+            "current_streak": 0,
+            "best_streak": 0,
+            "streak_start_date": None,
+            "last_activity_date": None,
+            "total_days_active": 0,
+            "next_milestone": None,
+            "recovery": {
+                "can_recover": False,
+                "recovery_window_hours": 72,
+                "streak_before_break": 0,
+                "grace_days_used": 0,
+                "max_grace_days": 3
+            },
+            "motivation": {
+                "streak_type": "💤 Resting",
+                "encouragement": "Start your journey today!",
+                "reward_points": 0
+            }
+        }
 
 def get_streak_encouragement(streak: int) -> str:
     """Get ADHD-friendly encouragement messages"""
@@ -2920,7 +2947,7 @@ async def get_user_stats(current_user: dict = Depends(get_current_user)):
         user_id = current_user["id"]
         
         # Get user statistics from database
-        user_data = await users_collection.find_one(
+        user_data = await db.users.find_one(
             {"_id": ObjectId(user_id)},
             {"stats": 1, "points": 1, "streak": 1, "achievements": 1}
         )
@@ -2945,7 +2972,7 @@ async def get_user_stats(current_user: dict = Depends(get_current_user)):
                     "best_streak": 0
                 }
             }
-            await users_collection.update_one(
+            await db.users.update_one(
                 {"_id": ObjectId(user_id)},
                 {"$set": {"stats": stats_data}}
             )
@@ -3035,7 +3062,7 @@ async def get_weekly_challenges(current_user: dict = Depends(get_current_user)):
         user_id = current_user["id"]
         
         # Get user challenges from database
-        user_data = await users_collection.find_one(
+        user_data = await db.users.find_one(
             {"_id": ObjectId(user_id)},
             {"challenges": 1, "stats": 1, "points": 1}
         )
@@ -3047,7 +3074,7 @@ async def get_weekly_challenges(current_user: dict = Depends(get_current_user)):
                 "completed_this_week": 0,
                 "last_week_reset": datetime.now(timezone.utc).isoformat()
             }
-            await users_collection.update_one(
+            await db.users.update_one(
                 {"_id": ObjectId(user_id)},
                 {"$set": {"challenges": challenges_data}}
             )
@@ -3187,7 +3214,7 @@ async def complete_challenge(challenge_id: str, current_user: dict = Depends(get
         # Award points for challenge completion
         points_earned = challenge["reward"]["points"]
         
-        await users_collection.update_one(
+        await db.users.update_one(
             {"_id": ObjectId(user_id)},
             {
                 "$inc": {
@@ -3283,7 +3310,7 @@ async def complete_focus_session(
         total_points = max(50, base_points + task_bonus + focus_bonus - interruption_penalty)
         
         # Update user points in database
-        await users_collection.update_one(
+        await db.users.update_one(
             {"_id": ObjectId(user_id)},
             {
                 "$inc": {
@@ -3352,7 +3379,7 @@ async def earn_points(
             category = "challenges"
         
         # Update user points in database
-        await users_collection.update_one(
+        await db.users.update_one(
             {"_id": ObjectId(user_id)},
             {
                 "$inc": {
