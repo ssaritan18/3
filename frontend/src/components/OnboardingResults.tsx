@@ -218,6 +218,34 @@ export function OnboardingResults({ result, onContinue }: OnboardingResultsProps
             <View style={[styles.scoreCard, { borderColor: getCategoryColor(result.overall_score) }]}>
               <Text style={styles.scoreNumber}>{result.overall_score}%</Text>
               <Text style={styles.scoreLabel}>ADHD Traits Present</Text>
+              
+              {/* Level Information */}
+              <View style={styles.levelInfoContainer}>
+                <Text style={[styles.levelText, { color: getCategoryColor(result.overall_score) }]}>
+                  {getCategoryLevel(result.overall_score).level}
+                </Text>
+                <Text style={styles.levelDescription}>
+                  {getCategoryLevel(result.overall_score).description}
+                </Text>
+              </View>
+              
+              {/* Progress Bar */}
+              <View style={styles.progressBarContainer}>
+                <View style={styles.progressBarBackground}>
+                  <View 
+                    style={[
+                      styles.progressBarFill, 
+                      { 
+                        width: `${result.overall_score}%`,
+                        backgroundColor: getCategoryColor(result.overall_score)
+                      }
+                    ]} 
+                  />
+                </View>
+                <Text style={styles.progressBarLabel}>
+                  {result.overall_score}/100
+                </Text>
+              </View>
             </View>
           </View>
 
@@ -517,5 +545,39 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '700',
+  },
+  levelInfoContainer: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  levelText: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  levelDescription: {
+    color: '#ccc',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  progressBarContainer: {
+    marginTop: 16,
+    width: '100%',
+  },
+  progressBarBackground: {
+    height: 8,
+    backgroundColor: '#333',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  progressBarLabel: {
+    color: '#ccc',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 8,
   },
 });
