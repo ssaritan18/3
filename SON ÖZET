@@ -1,0 +1,217 @@
+# Emergent → Google Play (27 Ağustos – 26 Eylül 2025)
+
+Bu doküman, 27 Ağustos’ta **Emergent** ile başlattığın denemeyi bugün **Google Play**’e yükleme aşamasına getiren yolculuğu net ve kalıcı bir öğrenme patikası olarak derler. Aşağıda, konuşmalarımızdan süzülen adımlar, kritik kararlar, yapılan işler ve bugün için kontrol listesi yer alıyor.
+
+---
+
+## 1) Büyük Resim ve Hedef
+
+* **Amaç:** MVP’yi uçtan uca çalışır hale getirip Google Play’e yüklemek.
+* **Kapsam:** Expo tabanlı mobil istemci (React Native), FastAPI backend, MongoDB Atlas veritabanı, e-posta için SMTP.
+* **Dağıtım İlk Yapı:** Frontend/uygulama: Expo; Backend: Render; Veri: MongoDB Atlas; SMTP: Google Cloud üzerinden kurulum.
+
+---
+
+## 2) Aşama Aşama Kullandığın Tüm Tool’lar (Zaman Çizelgesi)
+
+### Faz 0 — Hazırlık ve İlk Kurulum (27–29 Ağustos)
+
+**Kullanılan tool’lar:** Node.js + npm, **Expo CLI** (npx/create-expo-app), **Git & GitHub**, **Cursor** (AI destekli IDE) + **Codex** (diff/patch asistanı), Terminal (bash/zsh).
+
+* Proje iskeleti oluşturuldu, repo açıldı.
+
+### Faz 1 — Backend İlk Ayağa Kaldırma (Ağustos sonu)
+
+**Kullanılan tool’lar:** **Python 3.x**, **FastAPI**, **Uvicorn**, `pip` / `venv`, Terminal, **Render** (backend host).
+
+* FastAPI app kuruldu, Render’da ilk deploy yapıldı.
+
+### Faz 2 — Veritabanı (Ağustos sonu / Eylül başı)
+
+**Kullanılan tool’lar:** **MongoDB Atlas** (cluster, kullanıcı, SRV URI), Atlas UI, `.env` yönetimi.
+
+* Bağlantı dizeleri ortam değişkenlerine taşındı.
+
+### Faz 3 — Auth & Community API (Eylül ilk yarı)
+
+**Kullanılan tool’lar:** FastAPI router’ları, Pydantic modelleri, Terminal testleri.
+
+* Register/Login ve Community uçları (post/like/share/reply/delete) geliştirildi.
+
+### Faz 4 — Frontend Entegrasyonu (Eylül ortası)
+
+**Kullanılan tool’lar:** **Expo (React Native)**, HTTP istemcisi, **Cursor** (refactor/diff), GitHub PR’ları.
+
+* Community sekmesi backend’e bağlandı; UI geri bildirimleri (toast) eklendi.
+
+### Faz 5 — E-posta/SMTP (Eylül ortası)
+
+**Kullanılan tool’lar:** **Google Cloud SMTP** (relay / ayarlar), `.env` secret yönetimi.
+
+* Forgot Password/ doğrulama akışları için temel altyapı hazırlandı.
+
+### Faz 6 — Hosting Kararı ve Hizmetler
+
+**Kullanılan tool’lar:** **Vercel** (yalnızca frontend için değerlendirme), **Render** (backend host), Google Cloud (SMTP).
+
+* Migrasyonlar ertelendi; stabilize + store önceliklendirildi.
+
+### Faz 7 — Build & Yayın Hazırlığı (Eylül sonu)
+
+**Kullanılan tool’lar:** **expo.dev** hesabı, **EAS CLI** (expo/eas login, **eas build -p android**), **Android keystore** (EAS managed), **app.json/app.config** düzenleme, **Google Play Console**.
+
+* **.aab** üretimi ve Play Console içeriği/formlar için hazırlık.
+
+### Faz 8 — Test & Gözden Geçirme
+
+**Kullanılan tool’lar:** Play Console **Internal testing** kanalı, **Pre-launch report** (otomatik cihaz testleri).
+
+* İç test listesi ve geri bildirim döngüsü kuruldu (hedef: open/production).
+
+### Faz 9 — AI ile Geliştirme & Kod Akışı
+
+**Kullanılan tool’lar:** **Cursor** (AI pair programming), **Codex** (büyük diff’leri anlamlandırma/uygulama), Terminal.
+
+* Büyük dosyalarda (ör. server.py) diff/patch kimi zaman manuel uygulandı.
+
+### Faz 10 — UI Kit ve Tasarım Kararları
+
+**Kullanılan tool’lar:** **Kendi UI Kit & Renk Paleti**, Expo bileşenleri.
+
+* “Copy” → toast bildirimi, Information modal → davet kodu görüntüleme/silme gibi mikro-UX iyileştirmeleri.
+
+### Faz 11 — Veri/SQL (İş bağlamı ama öğrenime katkı)
+
+**Kullanılan tool’lar:** **Presto** (SQL) — hata analizi ve pattern tipleri.
+
+* SQL tip/syntax farkındalığı arttı; uygulama tarafında veri sözleşmesine dikkat.
+
+### Faz 12 — Gözlemlenebilirlik (Planlı)
+
+**Kullanılacak tool’lar:** **Sentry** veya **Firebase Crashlytics**, **GA4/Amplitude** (analitik).
+
+* Yayın sonrası kararlılık ve kullanıcı davranışını izleme.
+
+---
+
+## 3) Backend Kurulumu ve API’ler
+
+* **FastAPI sunucusu** oluşturuldu.
+* **Render üzerinde host** edildi (erken aşama dağıtım).
+* **MongoDB Atlas bağlantısı** yapıldı; bağlantı stringleri .env ile yönetildi.
+* **Auth akışı:** Kayıt (register) ve giriş (login) uçları.
+* **Topluluk (Community) modülü API’leri:** Post oluşturma, listeleme, beğenme, paylaşma, yanıtlama, silme.
+* **Sayaç ve kimlik yönetimi düzeltmeleri:** `current_user` kimliği normalize edildi, sayaçların (likes, replies, shares) tutarlılığı sağlandı.
+
+---
+
+## 4) Frontend Çalışmaları (Expo)
+
+* **Expo proje yapısı** kuruldu, ekranlar ve tab yapısı ayarlandı.
+* **Community sekmesi** backend API’lerine bağlandı.
+* **UI/UX iyileştirmeleri:**
+
+  * Copy tuşuna **toast/notification** eklendi.
+  * Information butonuna davet kodu görüntüleme/silme opsiyonu eklendi.
+  * Profil foto senkronizasyonu sorunları backlog’a alındı.
+
+---
+
+## 5) SMTP ve Harici Servisler
+
+* **Google Cloud SMTP** ayarlandı; forgot password / doğrulama süreçleri için altyapı hazırlandı.
+
+---
+
+## 6) Dev Akışı ve Araçlar
+
+* **Vercel**: Sadece frontend deploy için kullanılabilir olduğu netleşti.
+* **Render**: FastAPI backend’i için ilk host ortamı.
+* **Cursor & Codex entegrasyonu:**
+
+  * **Commit diff** planları çıkarıldı.
+  * Büyük dosyalarda (ör. server.py) değişikliklerin uygulanması için diff/patch süreçleri test edildi.
+  * Codex’in dosya taraması + diff uygulaması süreçlerinde **terminal üzerinden manuel uygulama** gerekti.
+* **Terminal çalışmaları:**
+
+  * EAS login/logout.
+  * Expo build komutları (Android .aab çıktısı).
+  * Git commit, push, branch yönetimi.
+  * Presto error gibi SQL hataları debug edildi.
+  * Syntax error’lar (örn. Python’da import hataları, JSON formatlamaları) terminal testlerinde yakalanıp giderildi.
+
+---
+
+## 7) E2E Testler
+
+* **Frontend ↔ Backend entegrasyonu**: Auth ve community akışları uçtan uca test edildi.
+* **Forgot Password** akışı çalışır hale getirildi.
+* **Notification/feedback** akışları test edilip onaylandı.
+
+---
+
+## 8) EAS (Expo Application Services) ve Build Süreci
+
+* **expo.dev login** çözüldü.
+* **app.json / app.config** düzenlemeleri: paket adı, ikon, splash screen, izinler.
+* **Keystore**: Android imzalama ayarları yapıldı.
+* **EAS Build (Android)**: .aab dosyası üretildi.
+
+---
+
+## 9) Community Modülü “Tamamlandı” Durumu (24 Eylül civarı)
+
+* CRUD, beğenme, paylaşma, yanıtlama, silme.
+* Test edilen uçlar tam liste: register/login + tüm community endpoint’leri.
+
+---
+
+## 10) Kararlar ve Öğrenimler
+
+* **Öncelik:** Çalışır ve stabilize sürümü mağazaya yüklemek.
+* **Taşıma:** Hosting migrasyonları ertelemek.
+* **Env/secrets yönetimi**: Ayrı ayrı yönetmek kritik.
+* **Syntax error’lar**: Terminal + Codex diff süreçlerinde sık sık karşılaşıldı, deneyim kazandırdı.
+* **UI kit / strateji**: Mevcut kit üzerinden ilerleme, başka uygulamalardan yalnızca feature mantığı alma kararı alındı.
+
+---
+
+## 11) Play Console Checklist (26 Eylül)
+
+* .aab dosyası hazır.
+* Paket adı ve versionCode/Name güncel.
+* Grafikleri, açıklamaları, gizlilik politikası ve data safety formları tamamlandı.
+* Internal testing → Open testing → Production süreci planlandı.
+
+**Ek: Komut Cep Kılavuzu (kısa)**
+
+* **Expo/EAS:** `expo login` · `eas login` · `eas build -p android` · `eas whoami`
+* **Git:** `git add .` · `git commit -m "..."` · `git push` · `git checkout -b <branch>`
+* **FastAPI (lokal):** `uvicorn server:app --reload` (dosya/entry adı değişebilir)
+* **Env:** `.env` içinde `MONGODB_URI`, API_BASE_URL, SMTP ayarları
+
+---
+
+## 12) Retrospektif
+
+* **Kurulum:** Expo + FastAPI + MongoDB.
+* **Özellik:** Auth + Community.
+* **Kalite:** Toast/feedback, Forgot Password.
+* **Araçlar:** Codex, Cursor, Terminal debug.
+* **Build:** EAS + Play Console.
+
+---
+
+## 13) Sonraki 7 Gün İçin Yol Haritası
+
+* Store yayını finalize et.
+* Test feedback → Hotfix.
+* Analytics/crash reporting ekle.
+* Onboarding & boş state ekranları geliştir.
+* Performans ve caching optimizasyonu.
+
+---
+
+### Notlar
+
+Bu özet, bugüne kadar yaptığımız konuşmalardan süzülen tüm AI, hosting, syntax error, UI kit, Cursor, Codex ve terminal süreçlerini kapsar.
