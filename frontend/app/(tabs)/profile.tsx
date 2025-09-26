@@ -61,6 +61,9 @@ export default function ProfileScreen() {
     bio: user?.bio || ''
   });
   
+  // Assessment result state
+  const [assessmentResult, setAssessmentResult] = useState<any>(null);
+  
   const total = tasks.reduce((a, t) => a + t.goal, 0);
   const done = tasks.reduce((a, t) => a + t.progress, 0);
   const ratio = total ? done / total : 0;
@@ -74,6 +77,7 @@ export default function ProfileScreen() {
         console.log('📂 Loading profile data from AsyncStorage...');
         const userKey = user?.id || user?.email || 'default';
         const savedProfile = await AsyncStorage.getItem(`profile_data_${userKey}`);
+        const savedAssessment = await AsyncStorage.getItem(`assessment_result_${userKey}`);
         
         if (savedProfile) {
           try {
@@ -93,6 +97,22 @@ export default function ProfileScreen() {
           }
         } else {
           console.log('📂 No profile data in AsyncStorage');
+        }
+        
+        // Load assessment result
+        if (savedAssessment) {
+          try {
+            const parsedAssessment = JSON.parse(savedAssessment);
+            console.log('✅ Assessment result loaded:', {
+              overall_score: parsedAssessment.overall_score,
+              adhd_type: parsedAssessment.adhd_type
+            });
+            setAssessmentResult(parsedAssessment);
+          } catch (error) {
+            console.error('❌ Error parsing saved assessment data:', error);
+          }
+        } else {
+          console.log('📂 No assessment data in AsyncStorage');
         }
       } catch (error) {
         console.error('❌ Failed to load profile data:', error);

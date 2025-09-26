@@ -11,6 +11,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingSubscriptionModal } from './OnboardingSubscriptionModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../lib/api';
 
 type OnboardingResult = {
   overall_score: number;
@@ -40,6 +42,57 @@ export function OnboardingResults({ result, onContinue }: OnboardingResultsProps
   
   // Subscription modal state
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Save assessment result to backend
+  const saveAssessmentResult = async () => {
+    if (isSaving) return;
+    
+    setIsSaving(true);
+    try {
+      // Get user ID from AsyncStorage or context
+      const userData = await AsyncStorage.getItem('user_data');
+      if (!userData) {
+        console.log('No user data found, saving locally only');
+        await AsyncStorage.setItem('pending_assessment_result', JSON.stringify(result));
+        return;
+      }
+      
+      const user = JSON.parse(userData);
+      const userId = user.id || user._id;
+      
+      if (!userId) {
+        console.log('No user ID found, saving locally only');
+        await AsyncStorage.setItem('pending_assessment_result', JSON.stringify(result));
+        return;
+      }
+      
+      // Save to backend
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/assessment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify(result)
+      });
+      
+      if (response.ok) {
+        console.log('✅ Assessment result saved to backend');
+        // Also save locally as backup
+        await AsyncStorage.setItem(`assessment_result_${userId}`, JSON.stringify(result));
+      } else {
+        console.log('❌ Failed to save to backend, saving locally only');
+        await AsyncStorage.setItem('pending_assessment_result', JSON.stringify(result));
+      }
+    } catch (error) {
+      console.log('❌ Error saving assessment result:', error);
+      // Fallback to local storage
+      await AsyncStorage.setItem('pending_assessment_result', JSON.stringify(result));
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
     // Start entrance animations
@@ -74,6 +127,9 @@ export function OnboardingResults({ result, onContinue }: OnboardingResultsProps
         ])
       ).start();
     }, 2000);
+
+    // Save assessment result
+    saveAssessmentResult();
   }, []);
 
   const getTypeDescription = () => {
@@ -110,11 +166,27 @@ export function OnboardingResults({ result, onContinue }: OnboardingResultsProps
   };
 
   const getCategoryColor = (score: number) => {
+    if (score >= 90) return '#8B0000'; // Very High - Dark Red
     if (score >= 80) return '#FF3547'; // High - Red
-    if (score >= 60) return '#FF6B35'; // Medium-High - Orange  
-    if (score >= 40) return '#FFD700'; // Medium - Yellow
-    if (score >= 20) return '#4A90E2'; // Low-Medium - Blue
-    return '#00C851'; // Low - Green
+    if (score >= 70) return '#FF6B35'; // High-Medium - Orange-Red
+    if (score >= 60) return '#FF8C00'; // Medium-High - Dark Orange
+    if (score >= 50) return '#FFD700'; // Medium - Yellow
+    if (score >= 40) return '#4A90E2'; // Medium-Low - Blue
+    if (score >= 30) return '#32CD32'; // Low-Medium - Green
+    if (score >= 20) return '#00C851'; // Low - Dark Green
+    return '#228B22'; // Very Low - Forest Green
+  };
+
+  const getCategoryLevel = (score: number) => {
+    if (score >= 90) return { level: 'Very High', description: 'Significant ADHD traits' };
+    if (score >= 80) return { level: 'High', description: 'Strong ADHD traits' };
+    if (score >= 70) return { level: 'High-Medium', description: 'Moderate to strong traits' };
+    if (score >= 60) return { level: 'Medium-High', description: 'Moderate traits' };
+    if (score >= 50) return { level: 'Medium', description: 'Some ADHD traits' };
+    if (score >= 40) return { level: 'Medium-Low', description: 'Mild traits' };
+    if (score >= 30) return { level: 'Low-Medium', description: 'Very mild traits' };
+    if (score >= 20) return { level: 'Low', description: 'Minimal traits' };
+    return { level: 'Very Low', description: 'No significant traits' };
   };
 
   const typeInfo = getTypeDescription();
@@ -177,6 +249,7 @@ export function OnboardingResults({ result, onContinue }: OnboardingResultsProps
               
               const categoryInfo = categoryNames[category as keyof typeof categoryNames];
               const color = getCategoryColor(score);
+              const levelInfo = getCategoryLevel(score);
               
               return (
                 <View key={category} style={styles.categoryItem}>
@@ -196,6 +269,9 @@ export function OnboardingResults({ result, onContinue }: OnboardingResultsProps
                       ]}
                     />
                   </View>
+                  <Text style={[styles.categoryLevel, { color }]}>
+                    {levelInfo.level} - {levelInfo.description}
+                  </Text>
                 </View>
               );
             })}
@@ -381,6 +457,12 @@ const styles = StyleSheet.create({
   categoryBar: {
     height: '100%',
     borderRadius: 4,
+  },
+  categoryLevel: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+    textAlign: 'center',
   },
   recommendationsSection: {
     marginBottom: 24,

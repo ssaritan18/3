@@ -12,9 +12,11 @@ GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 
 # Email Configuration (Optional)
 SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
+SMTP_PORT=465
 SMTP_USERNAME=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
+SMTP_FROM_EMAIL=your-email@gmail.com
+BASE_URL=https://yourdomain.com
 
 # Server Configuration
 HOST=0.0.0.0

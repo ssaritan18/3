@@ -337,9 +337,21 @@ export function ADHDOnboarding({ onComplete, onSkip }: ADHDOnboardingProps) {
 
     const overallScore = Object.values(categoryScores).reduce((sum, score) => sum + score, 0) / 5;
 
-    // Determine ADHD type
+    // Determine ADHD type with expanded spectrum
     let adhdType: OnboardingResult['adhd_type'] = 'mild_traits';
-    if (overallScore >= 70) {
+    
+    // More nuanced type determination
+    if (overallScore >= 80) {
+      // High scores - clear ADHD presentation
+      if (categoryScores.attention > categoryScores.hyperactivity + 15) {
+        adhdType = 'primarily_inattentive';
+      } else if (categoryScores.hyperactivity > categoryScores.attention + 15) {
+        adhdType = 'primarily_hyperactive';
+      } else {
+        adhdType = 'combined';
+      }
+    } else if (overallScore >= 60) {
+      // Medium-high scores - moderate ADHD traits
       if (categoryScores.attention > categoryScores.hyperactivity + 10) {
         adhdType = 'primarily_inattentive';
       } else if (categoryScores.hyperactivity > categoryScores.attention + 10) {
@@ -347,7 +359,11 @@ export function ADHDOnboarding({ onComplete, onSkip }: ADHDOnboardingProps) {
       } else {
         adhdType = 'combined';
       }
+    } else if (overallScore >= 40) {
+      // Medium scores - mild ADHD traits
+      adhdType = 'mild_traits';
     }
+    // Very low scores remain as mild_traits
 
     // Generate recommendations
     const recommendations = generateRecommendations(categoryScores, adhdType);

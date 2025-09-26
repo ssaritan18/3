@@ -197,32 +197,41 @@ async def send_welcome_email(user_email: str, user_name: str) -> bool:
     <html>
       <body style="font-family: Arial, sans-serif; line-height:1.5; color:#333;">
         <div style="max-width:600px; margin:0 auto; padding:20px; text-align:center;">
-          <img src="https://i.imgur.com/MDe0CK9.png" alt="ADHDers Social Club Logo" width="120" height="120" style="margin-bottom:20px; border-radius:50%;" />
-          <h1>Welcome to ADHDers Social Club! 🎉</h1>
-          <p>Hi {user_name},</p>
+          <!-- Header with dark purple gradient matching frontend -->
+          <div style="background: linear-gradient(135deg, #2D1B69 0%, #4A148C 50%, #6A1B9A 100%); padding: 35px 20px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(45, 27, 105, 0.4), 0 0 20px rgba(106, 27, 154, 0.3); position: relative; overflow: hidden;">
+            <!-- Neon glow effect -->
+            <div style="position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px; background: linear-gradient(45deg, #3F51B5, #E91E63, #FF9800, #3F51B5); border-radius: 25px; opacity: 0.3; filter: blur(15px); z-index: -1;"></div>
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold; text-shadow: 0 0 20px rgba(255,255,255,0.5), 0 2px 8px rgba(0,0,0,0.5); position: relative; z-index: 1;">Welcome to ADHDers Social Club! 🎉</h1>
+          </div>
+          <p style="font-weight: bold; font-size: 16px;">Hi {user_name},</p>
 
-          <p>
+          <p style="font-weight: bold; font-size: 14px; line-height: 1.6;">
             We're thrilled to have you on board! You've just joined a community designed for creative, bold, and neurodivergent minds like yours.
           </p>
 
-          <div style="margin: 30px 0;">
+          <div style="margin: 40px 0;">
             <a href="{profile_url}" 
-               style="display:inline-block; background:#5C6BC0; color:#fff; padding:12px 24px; text-decoration:none; border-radius:6px; margin:5px;">
+               style="display:inline-block; background: linear-gradient(135deg, #4A148C 0%, #6A1B9A 100%); color:#fff; padding:15px 30px; text-decoration:none; border-radius:12px; margin:8px; font-weight:bold; box-shadow: 0 4px 15px rgba(74, 20, 140, 0.3); transition: all 0.3s ease;">
               Complete Your Profile
             </a>
             <a href="{community_url}" 
-               style="display:inline-block; background:#26A69A; color:#fff; padding:12px 24px; text-decoration:none; border-radius:6px; margin:5px;">
+               style="display:inline-block; background: linear-gradient(135deg, #E91E63 0%, #FF9800 100%); color:#fff; padding:15px 30px; text-decoration:none; border-radius:12px; margin:8px; font-weight:bold; box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3); transition: all 0.3s ease;">
               Find Your Community
             </a>
           </div>
 
-          <p>📱 Track your productivity with gamified tools that make progress fun.<br>
-             💡 Boost your healthy dopamine by celebrating small wins every day.<br>
-             🤝 Find your neurodivergent friends and feel supported.</p>
+          <div style="background: linear-gradient(135deg, #F3E5F5 0%, #E8F5E8 100%); padding: 20px; border-radius: 15px; margin: 25px 0; border-left: 4px solid #6A1B9A;">
+            <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.5; font-weight: bold;">📱 <strong>Track your productivity</strong> with gamified tools that make progress fun.</p>
+            <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.5; font-weight: bold;">💡 <strong>Boost your healthy dopamine</strong> by celebrating small wins every day.</p>
+            <p style="margin: 0; font-size: 14px; line-height: 1.5; font-weight: bold;">🤝 <strong>Find your neurodivergent friends</strong> and feel supported.</p>
+          </div>
 
-          <p>This is more than just an app – it's your safe space to grow, connect, and thrive.</p>
+          <p style="font-size: 16px; font-style: italic; color: #4A148C; margin: 25px 0; padding: 18px; background: linear-gradient(135deg, #F8F9FA 0%, #E3F2FD 100%); border-radius: 12px; border: 1px solid #E1BEE7; font-weight: bold;">This is more than just an app – it's your safe space to grow, connect, and thrive.</p>
 
-          <p style="margin-top:40px;">Best regards,<br>The ADHDers Social Club Team</p>
+          <div style="margin-top: 40px; padding: 20px; background: linear-gradient(135deg, #2D1B69 0%, #4A148C 100%); border-radius: 15px; text-align: center;">
+            <p style="color: white; margin: 0; font-size: 16px; font-weight: bold;">Best regards,</p>
+            <p style="color: white; margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; font-weight: bold;">The ADHDers Social Club Team</p>
+          </div>
         </div>
       </body>
     </html>
@@ -419,6 +428,60 @@ async def get_ads_config():
 api_router = APIRouter(prefix="/api")
 
 # --- User Profile Management ---
+
+@api_router.post("/users/{user_id}/assessment")
+async def save_assessment_result(user_id: str, assessment_data: dict):
+    """Save ADHD assessment result for user"""
+    try:
+        # Validate assessment data structure
+        required_fields = ['overall_score', 'categories', 'adhd_type']
+        for field in required_fields:
+            if field not in assessment_data:
+                raise HTTPException(status_code=400, detail=f"Missing required field: {field}")
+        
+        # Update user with assessment result
+        result = await db.users.update_one(
+            {"_id": user_id},
+            {
+                "$set": {
+                    "assessment_result": assessment_data,
+                    "assessment_completed_at": now_iso(),
+                    "updated_at": now_iso()
+                }
+            }
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        logger.info(f"✅ Assessment result saved for user {user_id}")
+        return {"success": True, "message": "Assessment result saved successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error saving assessment result: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save assessment result")
+
+@api_router.get("/users/{user_id}/assessment")
+async def get_assessment_result(user_id: str):
+    """Get ADHD assessment result for user"""
+    try:
+        user = await db.users.find_one({"_id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        assessment_result = user.get("assessment_result")
+        if not assessment_result:
+            raise HTTPException(status_code=404, detail="No assessment result found")
+        
+        return {"success": True, "assessment_result": assessment_result}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error getting assessment result: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get assessment result")
 
 @api_router.put("/users/{user_id}/profile")
 async def update_user_profile(
@@ -1205,6 +1268,9 @@ async def auth_register(request: Request):
     
     # Send verification email
     verification_sent = await send_verification_email(req.email.lower(), verification_token)
+    
+    if EMAIL_ENABLED and not welcome_sent:
+        logger.warning(f"Failed to send welcome email to {req.email}")
     
     if EMAIL_ENABLED and not verification_sent:
         logger.warning(f"Failed to send verification email to {req.email}")

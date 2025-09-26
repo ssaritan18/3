@@ -145,36 +145,33 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        {/* Use DraggableFlatList as main container with ListHeaderComponent */}
-        {activeTab === 'daily-tools' && tasks.length > 0 ? (
-          <DraggableFlatList
-            data={tasks}
-            keyExtractor={(item) => item.id}
-            renderItem={renderTaskItem}
-            onDragEnd={({ data }) => {
-              // Handle reordering if needed
-            }}
+        {/* Main Content with proper scrolling */}
+        {activeTab === 'daily-tools' ? (
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
-            ListHeaderComponent={() => (
-              <View>
-                {/* Focus Mode Section */}
-                <View style={styles.focusSection}>
-                  <Text style={styles.sectionTitle}>🧠 Focus Mode</Text>
-                  <Text style={styles.sectionSubtitle}>Choose your focus session duration</Text>
-                  
-                  <View style={styles.focusCardsRow}>
-                    {/* Focus Cards */}
-                    <TouchableOpacity 
-                      style={styles.focusCard}
-                      onPress={() => router.push('/focus-timer?mode=Pomodoro&duration=25')}
-                    >
-                      <LinearGradient colors={['#8B5CF6', '#A855F7']} style={styles.focusCardGradient}>
-                        <Text style={styles.focusCardEmoji}>🍅</Text>
-                        <Text style={styles.focusCardTitle}>Pomodoro</Text>
-                        <Text style={styles.focusCardDuration}>25 min</Text>
-                        <Text style={styles.focusCardDescription}>Classic technique</Text>
-                      </LinearGradient>
-                    </TouchableOpacity>
+            scrollEnabled={true}
+            bounces={true}
+            alwaysBounceVertical={false}
+          >
+            {/* Focus Mode Section */}
+            <View style={styles.focusSection}>
+              <Text style={styles.sectionTitle}>🧠 Focus Mode</Text>
+              <Text style={styles.sectionSubtitle}>Choose your focus session duration</Text>
+              
+              <View style={styles.focusCardsRow}>
+                {/* Focus Cards */}
+                <TouchableOpacity 
+                  style={styles.focusCard}
+                  onPress={() => router.push('/focus-timer?mode=Pomodoro&duration=25')}
+                >
+                  <LinearGradient colors={['#8B5CF6', '#A855F7']} style={styles.focusCardGradient}>
+                    <Text style={styles.focusCardEmoji}>🍅</Text>
+                    <Text style={styles.focusCardTitle}>Pomodoro</Text>
+                    <Text style={styles.focusCardDuration}>25 min</Text>
+                    <Text style={styles.focusCardDescription}>Classic technique</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
 
                     <TouchableOpacity 
                       style={styles.focusCard}
@@ -246,18 +243,31 @@ export default function HomeScreen() {
                 </View>
 
                 <Text style={styles.sectionTitle}>📝 Your Tasks ({tasks.length})</Text>
+                
+                {/* Tasks List */}
+                {tasks.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onToggle={() => increment(task.id)}
+                    onRemove={() => remove(task.id)}
+                    onPress={() => {}}
+                  />
+                ))}
               </View>
-            )}
-          />
-        ) : activeTab === 'daily-tools' ? (
+            </ScrollView>
+        ) : activeTab === 'self-check' ? (
           <ScrollView 
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+            scrollEnabled={true}
+            bounces={true}
+            alwaysBounceVertical={false}
           >
-            {/* Same content but for when no tasks */}
+            {/* Self-Check Content */}
             <View style={styles.focusSection}>
-              <Text style={styles.sectionTitle}>🧠 Focus Mode</Text>
-              <Text style={styles.sectionSubtitle}>Choose your focus session duration</Text>
+              <Text style={styles.sectionTitle}>💭 Self-Check</Text>
+              <Text style={styles.sectionSubtitle}>Monitor your mental health and progress</Text>
               
               <View style={styles.focusCardsRow}>
                 <TouchableOpacity 
