@@ -58,7 +58,7 @@ export default function ProfileScreen() {
   const [profileData, setProfileData] = useState({
     profile_image: null as string | null,
     name: user?.name || 'You',
-    bio: user?.bio || ''
+    bio: (user as any)?.bio || ''
   });
   
   // Assessment result state
@@ -90,7 +90,7 @@ export default function ProfileScreen() {
             setProfileData({
               profile_image: parsedProfile.profile_image || null,
               name: parsedProfile.name || user?.name || 'You',
-              bio: parsedProfile.bio || user?.bio || ''
+              bio: parsedProfile.bio || (user as any)?.bio || ''
             });
           } catch (error) {
             console.error('❌ Error parsing saved profile data:', error);
@@ -326,7 +326,7 @@ export default function ProfileScreen() {
       title: 'Add Profile Picture',
       description: 'Upload a photo to personalize your profile',
       emoji: '📸',
-      completed: !!user?.profile_image,
+      completed: !!(user as any)?.profile_image,
       reward: { points: 50, badge: '📸', description: 'Picture Perfect badge unlocked!' },
       action: navigateToEdit
     },
@@ -335,7 +335,7 @@ export default function ProfileScreen() {
       title: 'Write Your Bio',
       description: 'Tell the community about your ADHD journey',
       emoji: '✍️',
-      completed: !!user?.bio,
+      completed: !!(user as any)?.bio,
       reward: { points: 75, badge: '✍️', description: 'Storyteller badge unlocked!' },
       action: navigateToEdit
     },

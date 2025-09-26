@@ -358,7 +358,7 @@ const AssessmentFollowupContent: React.FC<AssessmentFollowupContentProps> = ({
     setShowContentModal(true);
   };
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryGradientColors = (category: string) => {
     const colors = {
       attention: ['#8B5CF6', '#A855F7'],
       hyperactivity: ['#EC4899', '#F97316'],
@@ -574,7 +574,7 @@ const AssessmentFollowupContent: React.FC<AssessmentFollowupContentProps> = ({
             onPress={() => openContentModal(content)}
           >
             <LinearGradient
-              colors={getCategoryColor(content.category)}
+              colors={getCategoryGradientColors(content.category)}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.contentGradient}

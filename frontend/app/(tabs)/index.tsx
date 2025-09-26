@@ -45,10 +45,18 @@ export default function HomeScreen() {
 
   // Hooks for dashboard features
   const { challenges, completeChallenge } = useChallenges();
-  const { currentSession, isSessionActive, startSession, endSession } = useFocusSession();
-  const { totalPoints, todayPoints } = usePoints();
-  const { achievements, recentAchievements } = useAchievements();
-  const { currentStreak, bestStreak } = useStreak();
+  const { currentSession, startSession, endSession } = useFocusSession();
+  const { pointsData } = usePoints();
+  const { achievements } = useAchievements();
+  const { streak } = useStreak();
+  
+  // Extract values from hooks
+  const isSessionActive = !!currentSession;
+  const totalPoints = pointsData?.total_points || 0;
+  const todayPoints = pointsData?.breakdown?.tasks || 0;
+  const recentAchievements = achievements.filter(a => a.unlocked).slice(0, 3);
+  const currentStreak = streak;
+  const bestStreak = streak; // Simplified for now
 
   // Task statistics
   const stats = useMemo(() => {

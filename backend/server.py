@@ -396,21 +396,7 @@ async def health_check():
         }
 
 # Debug endpoint for upload directory info
-@app.get("/debug/upload-info")
-async def debug_upload_info():
-    """Debug endpoint to check upload directory configuration"""
-    upload_dir = os.getenv('UPLOAD_DIR', './uploads')
-    chat_dir = os.path.join(upload_dir, 'chat')
-    
-    return {
-        "upload_dir": upload_dir,
-        "chat_dir": chat_dir,
-        "upload_dir_exists": os.path.exists(upload_dir),
-        "chat_dir_exists": os.path.exists(chat_dir),
-        "upload_dir_absolute": os.path.abspath(upload_dir),
-        "chat_dir_absolute": os.path.abspath(chat_dir),
-        "current_working_dir": os.getcwd()
-    }
+# Debug endpoint removed for production security
 
 # Ads Configuration Endpoint (Feature Flag for Ad Display)
 @app.get("/api/config/ads")
