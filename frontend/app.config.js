@@ -3,8 +3,10 @@ export default {
     name: "ADHDers Social Club",
     slug: "adhders-social-club",
     version: "1.0.0",
+    owner: "ssaritan",
     android: {
-      package: "com.adhders.socialclub"
+      package: "com.adhders.socialclub",
+      versionCode: 2
     },
     ios: {
       bundleIdentifier: "com.adhders.socialclub",
