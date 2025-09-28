@@ -1506,6 +1506,8 @@ async def get_me(user=Depends(get_current_user)):
         "email": user.get("email"),
         "photo_base64": user.get("photo_base64"),
         "palette": user.get("palette"),
+        "owned_items": user.get("owned_items", []),
+        "total_points": user.get("total_points", 0),
         "today": {"total_goal": total_goal, "total_progress": total_progress, "ratio": daily_ratio},
     }
 
@@ -4997,6 +4999,145 @@ async def delete_community_post(post_id: str, current_user = Depends(get_current
     except Exception as e:
         logger.error(f"❌ Failed to delete post: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to delete post: {str(e)}")
+
+# --- Points System ---
+
+@api_router.get("/user/points")
+async def get_user_points(user=Depends(get_current_user)):
+    """Get user's points data"""
+    try:
+        user_id = user["_id"]
+        
+        # Get user's current points from database
+        user_data = await db.users.find_one({"_id": user_id})
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Calculate points breakdown (simplified for now)
+        total_points = user_data.get("total_points", 0)
+        level = (total_points // 200) + 1  # 200 points per level
+        points_to_next_level = 200 - (total_points % 200)
+        
+        # Mock breakdown for now
+        breakdown = {
+            "achievements": min(total_points // 4, 450),
+            "tasks": min(total_points // 3, 300),
+            "focus_sessions": min(total_points // 5, 250),
+            "community": min(total_points // 10, 100),
+            "streaks": min(total_points // 12, 100),
+            "challenges": min(total_points // 20, 50)
+        }
+        
+        multipliers = {
+            "current_streak_bonus": 1.2,
+            "weekly_challenge_bonus": 1.0,
+            "achievement_tier_bonus": 1.1
+        }
+        
+        return {
+            "total_points": total_points,
+            "level": level,
+            "points_to_next_level": points_to_next_level,
+            "breakdown": breakdown,
+            "multipliers": multipliers
+        }
+    except Exception as e:
+        logger.error(f"❌ Error getting user points: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get user points")
+
+@api_router.post("/points/spend")
+async def spend_points(
+    points: int,
+    item_type: str,
+    item_id: str,
+    user=Depends(get_current_user)
+):
+    """Spend points on store items"""
+    try:
+        user_id = user["_id"]
+        
+        # Get user's current points
+        user_data = await db.users.find_one({"_id": user_id})
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        current_points = user_data.get("total_points", 0)
+        
+        # Check if user has enough points
+        if current_points < points:
+            raise HTTPException(status_code=400, detail="Insufficient points")
+        
+        # Check if user already owns this item
+        owned_items = user_data.get("owned_items", [])
+        if item_id in owned_items:
+            raise HTTPException(status_code=400, detail="Item already owned")
+        
+        # Deduct points and add item to owned items
+        new_points = current_points - points
+        owned_items.append(item_id)
+        
+        await db.users.update_one(
+            {"_id": user_id},
+            {
+                "$set": {
+                    "total_points": new_points,
+                    "owned_items": owned_items,
+                    "updated_at": now_iso()
+                }
+            }
+        )
+        
+        logger.info(f"✅ User {user_id} spent {points} points on {item_type}:{item_id}")
+        
+        return {
+            "success": True,
+            "message": f"Successfully purchased {item_id} for {points} points!",
+            "new_points": new_points
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error spending points: {e}")
+        raise HTTPException(status_code=500, detail="Failed to spend points")
+
+@api_router.post("/points/earn")
+async def earn_points(
+    points: int,
+    source: str,
+    user=Depends(get_current_user)
+):
+    """Earn points from various sources"""
+    try:
+        user_id = user["_id"]
+        
+        # Get user's current points
+        user_data = await db.users.find_one({"_id": user_id})
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        current_points = user_data.get("total_points", 0)
+        new_points = current_points + points
+        
+        await db.users.update_one(
+            {"_id": user_id},
+            {
+                "$set": {
+                    "total_points": new_points,
+                    "updated_at": now_iso()
+                }
+            }
+        )
+        
+        logger.info(f"✅ User {user_id} earned {points} points from {source}")
+        
+        return {
+            "success": True,
+            "message": f"Earned {points} points from {source}!",
+            "new_points": new_points
+        }
+    except Exception as e:
+        logger.error(f"❌ Error earning points: {e}")
+        raise HTTPException(status_code=500, detail="Failed to earn points")
         
 # Include the API router with all endpoints
 app.include_router(api_router)

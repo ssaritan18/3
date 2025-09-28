@@ -36,6 +36,7 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const [newTask, setNewTask] = useState("");
+  const [taskGoal, setTaskGoal] = useState(5);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showEnhancedCelebration, setShowEnhancedCelebration] = useState(false);
@@ -79,8 +80,9 @@ export default function HomeScreen() {
 
     try {
       const color = COLOR_PRESETS[Math.floor(Math.random() * COLOR_PRESETS.length)];
-      addTask(title, 5, color); // Default goal of 5 units, random color
+      addTask(title, taskGoal, color);
       setNewTask("");
+      setTaskGoal(5);
       setShowModal(false);
     } catch (error) {
       console.error("Failed to create task:", error);
@@ -460,6 +462,29 @@ export default function HomeScreen() {
                   maxLength={100}
                 />
                 
+                <View style={styles.goalSection}>
+                  <Text style={styles.goalLabel}>How many steps to complete?</Text>
+                  <View style={styles.goalButtons}>
+                    {[1, 3, 5, 10, 15, 20].map((goal) => (
+                      <TouchableOpacity
+                        key={goal}
+                        onPress={() => setTaskGoal(goal)}
+                        style={[
+                          styles.goalButton,
+                          taskGoal === goal && styles.goalButtonActive
+                        ]}
+                      >
+                        <Text style={[
+                          styles.goalButtonText,
+                          taskGoal === goal && styles.goalButtonTextActive
+                        ]}>
+                          {goal}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+                
                 <View style={styles.modalButtons}>
                   <TouchableOpacity onPress={() => setShowModal(false)}>
                     <LinearGradient colors={['#666', '#555']} style={styles.modalBtn}>
@@ -836,5 +861,43 @@ const styles = StyleSheet.create({
   rewardedAdSection: {
     paddingHorizontal: 16,
     marginBottom: 20,
+  },
+  
+  // Goal selection styles
+  goalSection: {
+    marginVertical: 20,
+  },
+  goalLabel: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  goalButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  goalButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  goalButtonActive: {
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    borderColor: '#8B5CF6',
+  },
+  goalButtonText: {
+    color: '#B9B9B9',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  goalButtonTextActive: {
+    color: '#fff',
   },
 });

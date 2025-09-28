@@ -229,7 +229,7 @@ const AssessmentFollowupContent: React.FC<AssessmentFollowupContentProps> = ({
     // Organization-focused content
     {
       id: 'organization_mastery',
-      title: '📋 Executive Organization System',
+      title: '📋 Yürütücü Organizasyon Sistemi',
       description: 'Systematic approach to organizing life with ADHD-friendly methods',
       priority: 'high',
       category: 'organization',

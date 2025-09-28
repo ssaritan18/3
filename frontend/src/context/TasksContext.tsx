@@ -68,13 +68,41 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     addTask: (title, goal, color) => setTasks((prev) => [...prev, { id: uid(), title, goal, progress: 0, color }]),
     increment: async (id) => {
       let completedNow = false;
+      
+      // Find the task to check if it will be completed
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        const newProgress = Math.min(task.progress + 1, task.goal);
+        completedNow = task.progress < task.goal && newProgress >= task.goal;
+      }
+      
+      // Update local state optimistically
       setTasks((prev) => prev.map((t) => {
         if (t.id !== id) return t;
         const newProgress = Math.min(t.progress + 1, t.goal);
-        const becameComplete = t.progress < t.goal && newProgress >= t.goal;
-        if (becameComplete) completedNow = true;
         return { ...t, progress: newProgress };
       }));
+      
+      // Try to sync with backend
+      try {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'https://adhders-social-club.onrender.com'}/api/tasks/${id}/increment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${await AsyncStorage.getItem('auth_token')}`
+          }
+        });
+        
+        if (response.ok) {
+          const updatedTask = await response.json();
+          // Update with backend response
+          setTasks((prev) => prev.map((t) => t.id === id ? { ...t, progress: updatedTask.progress } : t));
+        }
+      } catch (error) {
+        console.error('Failed to sync task increment with backend:', error);
+        // Local state is already updated, so we continue
+      }
+      
       if (completedNow) await markTodayCompleted();
       return completedNow;
     },

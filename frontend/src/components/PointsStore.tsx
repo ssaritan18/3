@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { usePoints } from '../hooks/usePoints';
 import { useSubscription } from '../context/SubscriptionContext';
+import { useAuth } from '../context/AuthContext';
 
 interface StoreItem {
   id: string;
@@ -115,10 +116,38 @@ interface PointsStoreProps {
 export function PointsStore({ style }: PointsStoreProps) {
   const { pointsData, spendPoints, canAfford } = usePoints();
   const { subscription } = useSubscription();
+  const { user, mode } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [purchasedItems, setPurchasedItems] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
 
   const categories = ['All', 'Avatar', 'Stickers', 'Focus Sounds', 'Chat'];
+
+  // Fetch owned items from backend
+  useEffect(() => {
+    const fetchOwnedItems = async () => {
+      if (mode === 'sync' && user?.token) {
+        try {
+          const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'https://adhders-social-club.onrender.com'}/api/me`, {
+            headers: {
+              'Authorization': `Bearer ${user.token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const userData = await response.json();
+            const ownedItems = userData.owned_items || [];
+            setPurchasedItems(new Set(ownedItems));
+          }
+        } catch (error) {
+          console.error('Error fetching owned items:', error);
+        }
+      }
+    };
+
+    fetchOwnedItems();
+  }, [user, mode]);
 
   // Filter items by category
   const getFilteredItems = () => {
@@ -146,26 +175,34 @@ export function PointsStore({ style }: PointsStoreProps) {
       return;
     }
 
+    setLoading(true);
+
     // Confirm purchase
     Alert.alert(
       'Confirm Purchase',
       `Purchase "${item.name}" for ${item.cost} points?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel', onPress: () => setLoading(false) },
         {
           text: 'Buy',
           style: 'default',
           onPress: async () => {
-            const result = await spendPoints(item.cost, item.type, item.id);
-            
-            if (result.success) {
-              setPurchasedItems(prev => new Set([...prev, item.id])); 
-              Alert.alert(
-                '🎉 Purchase Successful!',
-                `You've purchased "${item.name}"! Check your profile to use it.`
-              );
-            } else {
-              Alert.alert('Purchase Failed', result.error || 'Unknown error');
+            try {
+              const result = await spendPoints(item.cost, item.type, item.id);
+              
+              if (result.success) {
+                setPurchasedItems(prev => new Set([...prev, item.id])); 
+                Alert.alert(
+                  '🎉 Purchase Successful!',
+                  `You've purchased "${item.name}"! Check your profile to use it.`
+                );
+              } else {
+                Alert.alert('Purchase Failed', result.error || 'Unknown error');
+              }
+            } catch (error) {
+              Alert.alert('Purchase Failed', 'Network error. Please try again.');
+            } finally {
+              setLoading(false);
             }
           }
         }
@@ -207,17 +244,19 @@ export function PointsStore({ style }: PointsStoreProps) {
               style={[
                 styles.purchaseButton,
                 isOwned && styles.ownedButton,
-                !affordable && !isOwned && styles.unaffordableButton
+                !affordable && !isOwned && styles.unaffordableButton,
+                loading && styles.loadingButton
               ]}
               onPress={() => purchaseItem(item)}
-              disabled={isOwned}
+              disabled={isOwned || loading}
             >
               <Text style={[
                 styles.purchaseButtonText,
                 isOwned && styles.ownedButtonText,
-                !affordable && !isOwned && styles.unaffordableButtonText
+                !affordable && !isOwned && styles.unaffordableButtonText,
+                loading && styles.loadingButtonText
               ]}>
-                {isOwned ? 'Owned' : affordable ? 'Buy' : 'Can\'t Afford'}
+                {loading ? 'Processing...' : isOwned ? 'Owned' : affordable ? 'Buy' : 'Can\'t Afford'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -386,6 +425,12 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   unaffordableButtonText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  loadingButton: {
+    backgroundColor: 'rgba(107, 114, 128, 0.8)',
+  },
+  loadingButtonText: {
     color: 'rgba(255, 255, 255, 0.7)',
   },
 });
