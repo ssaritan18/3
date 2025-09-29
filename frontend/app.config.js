@@ -6,7 +6,7 @@ export default {
     owner: "ssaritan",
     android: {
       package: "com.adhders.socialclub",
-      versionCode: 2
+      versionCode: 3
     },
     ios: {
       bundleIdentifier: "com.adhders.socialclub",
