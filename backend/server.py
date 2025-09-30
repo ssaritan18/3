@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.websockets import WebSocketState
 from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import time
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -3454,16 +3454,9 @@ lan_origin_regex = (
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:8081", 
-        "https://adhderssocialclub4.vercel.app",
-        "https://adhderssocialclub4-j5djdfp5a-ssaritans-projects.vercel.app",
-        "https://adhderssocialclub4-646q7lxbg-ssaritans-projects.vercel.app",
-        "https://*.vercel.app"  # Allow all Vercel subdomains
-    ],
+    allow_origins=["*"],  # prod'da domainini ekle
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
