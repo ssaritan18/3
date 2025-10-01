@@ -5,6 +5,9 @@ export default {
     version: "1.0.1",
     owner: "ssaritan",
     platforms: ["ios", "android"],
+    plugins: [
+      ["react-native-google-mobile-ads", { "iosAppId": "ca-app-pub-8247392015171096~2470722104" }]
+    ],
     android: {
       package: "com.adhders.socialclub",
       versionCode: 3,
@@ -12,11 +15,11 @@ export default {
     },
     ios: {
       bundleIdentifier: "com.adhders.socialclub",
-      buildNumber: "3",
-      googleMobileAdsAppId: "ca-app-pub-3940256099942544~1458002511",
+      buildNumber: "4",
+      googleMobileAdsAppId: "ca-app-pub-8247392015171096~2470722104",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
-        GADApplicationIdentifier: "ca-app-pub-3940256099942544~1458002511",
+        GADApplicationIdentifier: "ca-app-pub-8247392015171096~2470722104",
         NSUserTrackingUsageDescription: "This identifier will be used to deliver personalized ads to you."
       }
     },
