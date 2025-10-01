@@ -12,11 +12,12 @@ export default {
     },
     ios: {
       bundleIdentifier: "com.adhders.socialclub",
-      buildNumber: "2",
+      buildNumber: "3",
       googleMobileAdsAppId: "ca-app-pub-3940256099942544~1458002511",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
-        GADApplicationIdentifier: "ca-app-pub-3940256099942544~1458002511"
+        GADApplicationIdentifier: "ca-app-pub-3940256099942544~1458002511",
+        NSUserTrackingUsageDescription: "This identifier will be used to deliver personalized ads to you."
       }
     },
     extra: {
