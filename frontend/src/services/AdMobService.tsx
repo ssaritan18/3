@@ -1,11 +1,12 @@
-import mobileAds, { 
-  AdEventType, 
-  BannerAd, 
-  BannerAdSize,
-  RewardedAd,
-  RewardedAdEventType,
-  TestIds 
-} from 'react-native-google-mobile-ads';
+// AdMob temporarily disabled to fix crash
+// import mobileAds, { 
+//   AdEventType, 
+//   BannerAd, 
+//   BannerAdSize,
+//   RewardedAd,
+//   RewardedAdEventType,
+//   TestIds 
+// } from 'react-native-google-mobile-ads';
 import { Platform } from 'react-native';
 
 // Test Ad Unit IDs provided by Google for development
