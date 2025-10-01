@@ -2,16 +2,20 @@ export default {
   expo: {
     name: "ADHDers Social Club",
     slug: "adhders-social-club",
-    version: "1.0.0",
+    version: "1.0.1",
     owner: "ssaritan",
     android: {
       package: "com.adhders.socialclub",
-      versionCode: 3
+      versionCode: 3,
+      googleMobileAdsAppId: "ca-app-pub-3940256099942544~3347511713"
     },
     ios: {
       bundleIdentifier: "com.adhders.socialclub",
+      buildNumber: "2",
+      googleMobileAdsAppId: "ca-app-pub-3940256099942544~1458002511",
       infoPlist: {
-        ITSAppUsesNonExemptEncryption: false
+        ITSAppUsesNonExemptEncryption: false,
+        GADApplicationIdentifier: "ca-app-pub-3940256099942544~1458002511"
       }
     },
     extra: {
