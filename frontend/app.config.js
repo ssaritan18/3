@@ -4,6 +4,7 @@ export default {
     slug: "adhders-social-club",
     version: "1.0.1",
     owner: "ssaritan",
+    platforms: ["ios", "android"],
     android: {
       package: "com.adhders.socialclub",
       versionCode: 3,
