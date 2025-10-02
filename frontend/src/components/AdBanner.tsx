@@ -1,52 +1,31 @@
 import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+// AdMob temporarily disabled to fix crash
+// import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import { useSubscription } from '../context/SubscriptionContext';
-import { adMobService } from '../services/AdMobService';
+// import { adMobService } from '../services/AdMobService';
 
 interface AdBannerProps {
-  size?: BannerAdSize;
+  size?: any; // BannerAdSize temporarily disabled
   style?: any;
 }
 
 export function AdBanner({ 
-  size = BannerAdSize.ANCHORED_ADAPTIVE_BANNER, 
+  size, 
   style 
 }: AdBannerProps) {
   const { subscription } = useSubscription();
 
+  // AdMob temporarily disabled to fix crash
   // Don't show ads for premium users
-  if (!adMobService.shouldShowAds(subscription.tier === 'premium')) {
+  if (subscription.tier === 'premium') {
     return null;
   }
 
-  const adUnitId = adMobService.getBannerAdUnitId();
-
+  // Return empty view instead of ad
   return (
     <View style={[styles.container, style]}>
-      <BannerAd
-        unitId={adUnitId}
-        size={size}
-        requestOptions={{
-          requestNonPersonalizedAdsOnly: false,
-        }}
-        onAdLoaded={() => {
-          console.log('✅ Banner ad loaded successfully');
-          adMobService.logAdEvent('banner_loaded');
-        }}
-        onAdFailedToLoad={(error) => {
-          console.warn('⚠️ Banner ad failed to load:', error);
-          adMobService.logAdEvent('banner_failed', { error: error.message });
-        }}
-        onAdOpened={() => {
-          console.log('📱 Banner ad opened');
-          adMobService.logAdEvent('banner_clicked');
-        }}
-        onAdClosed={() => {
-          console.log('📱 Banner ad closed');
-          adMobService.logAdEvent('banner_closed');
-        }}
-      />
+      {/* AdMob temporarily disabled to fix crash */}
     </View>
   );
 }

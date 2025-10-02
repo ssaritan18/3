@@ -11,7 +11,7 @@ export default {
     },
     ios: {
       bundleIdentifier: "com.adhders.socialclub",
-      buildNumber: "5",
+      buildNumber: "6",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false
       }
