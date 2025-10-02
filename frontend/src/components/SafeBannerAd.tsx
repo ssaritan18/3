@@ -6,15 +6,16 @@ import AdHelper from '../services/AdHelper';
 let BannerAd: any = null;
 let BannerAdSize: any = null;
 
-if (Platform.OS !== 'web') {
-  try {
-    const AdModule = require('react-native-google-mobile-ads');
-    BannerAd = AdModule.BannerAd;
-    BannerAdSize = AdModule.BannerAdSize;
-  } catch (error) {
-    console.log('AdMob not available on this platform');
-  }
-}
+// AdMob temporarily disabled to fix crash
+// if (Platform.OS !== 'web') {
+//   try {
+//     const AdModule = require('react-native-google-mobile-ads');
+//     BannerAd = AdModule.BannerAd;
+//     BannerAdSize = AdModule.BannerAdSize;
+//   } catch (error) {
+//     console.log('AdMob not available on this platform');
+//   }
+// }
 
 interface SafeBannerAdProps {
   size?: any;
@@ -27,6 +28,8 @@ const SafeBannerAd: React.FC<SafeBannerAdProps> = ({
   style,
   showFallback = true 
 }) => {
+  // AdMob temporarily disabled to fix crash
+  return null;
   const [adState, setAdState] = useState({
     loading: true,
     loaded: false,
