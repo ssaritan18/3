@@ -1,18 +1,25 @@
-import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
-import { Platform } from 'react-native';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+
+const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 
 // Google Sign-In Configuration
 export const configureGoogleSignIn = () => {
+  if (!webClientId) {
+    console.warn(
+      '[GoogleSignIn] Missing EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID – Google Sign-In will be disabled until it is provided.'
+    );
+    return;
+  }
+
   GoogleSignin.configure({
-    // Get this from Google Cloud Console
-    webClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com', // From Google Cloud Console
-    offlineAccess: true, // If you want to access Google API on behalf of the user FROM YOUR SERVER
-    hostedDomain: '', // specifies a hosted domain restriction
-    forceCodeForRefreshToken: true, // [Android] related to `serverAuthCode`, read the docs link below *.
-    accountName: '', // [Android] specifies an account name on the device that should be used
-    iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com', // [iOS] if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
-    googleServicePlistPath: '', // [iOS] if you renamed your GoogleService-Info.plist file
-    openIdConnect: true, // [iOS] The OpenID Connect endpoint for Google's OIDC
+    webClientId,
+    iosClientId: iosClientId || undefined,
+    offlineAccess: true,
+    hostedDomain: '',
+    forceCodeForRefreshToken: true,
+    accountName: '',
+    openIdConnect: true,
   });
 };
 
