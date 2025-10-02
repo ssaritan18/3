@@ -3,8 +3,8 @@ module.exports = function (api) {
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      // Worklets plugin sadece native platformlarda çalışır
-      process.env.EXPO_PLATFORM !== 'web' && 'react-native-worklets/plugin',
+      // Worklets plugin temporarily disabled to fix crash
+      // process.env.EXPO_PLATFORM !== 'web' && 'react-native-worklets/plugin',
     ].filter(Boolean),
   };
 };
