@@ -11,9 +11,10 @@ export default {
     },
     ios: {
       bundleIdentifier: "com.adhders.socialclub",
-      buildNumber: "7",
+      buildNumber: "8",
       infoPlist: {
-        ITSAppUsesNonExemptEncryption: false
+        ITSAppUsesNonExemptEncryption: false,
+        GADApplicationIdentifier: "ca-app-pub-8247392015171096~2470722104"
       }
     },
     extra: {
