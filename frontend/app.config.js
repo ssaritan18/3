@@ -11,15 +11,12 @@ export default {
     },
     ios: {
       bundleIdentifier: "com.adhders.socialclub",
-      buildNumber: "14",
+      buildNumber: "15",
       infoPlist: {
-        ITSAppUsesNonExemptEncryption: false
-        // GADApplicationIdentifier removed - no ads SDK
+        ITSAppUsesNonExemptEncryption: false,
+        GADApplicationIdentifier: "ca-app-pub-8247392015171096~2470722104"
       }
     },
-    plugins: [
-      "react-native-reanimated"
-    ],
     extra: {
       backendUrl: "https://adhders-social-club.onrender.com",
       eas: {

@@ -3,7 +3,8 @@ module.exports = function (api) {
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      'react-native-reanimated/plugin',
-    ],
+      // Worklets plugin temporarily disabled to fix crash
+      // process.env.EXPO_PLATFORM !== 'web' && 'react-native-worklets/plugin',
+    ].filter(Boolean),
   };
 };
