@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import Constants from 'expo-constants';
 import AdHelper from '../services/AdHelper';
 
 // Platform-specific imports
@@ -28,8 +29,12 @@ const SafeBannerAd: React.FC<SafeBannerAdProps> = ({
   style,
   showFallback = true 
 }) => {
-  // AdMob temporarily disabled to fix crash
-  return null;
+  const ENABLE_ADMOB = Constants.expoConfig?.extra?.ENABLE_ADMOB || false;
+  
+  // Feature flag kontrolü
+  if (!ENABLE_ADMOB) {
+    return null;
+  }
   const [adState, setAdState] = useState({
     loading: true,
     loaded: false,

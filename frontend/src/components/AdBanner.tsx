@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-// AdMob temporarily disabled to fix crash
-// import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import Constants from 'expo-constants';
 import { useSubscription } from '../context/SubscriptionContext';
+// import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 // import { adMobService } from '../services/AdMobService';
 
 interface AdBannerProps {
@@ -15,8 +15,13 @@ export function AdBanner({
   style 
 }: AdBannerProps) {
   const { subscription } = useSubscription();
+  const ENABLE_ADMOB = Constants.expoConfig?.extra?.ENABLE_ADMOB || false;
 
-  // AdMob temporarily disabled to fix crash
+  // Feature flag kontrolü
+  if (!ENABLE_ADMOB) {
+    return null;
+  }
+
   // Don't show ads for premium users
   if (subscription.tier === 'premium') {
     return null;
@@ -25,7 +30,7 @@ export function AdBanner({
   // Return empty view instead of ad
   return (
     <View style={[styles.container, style]}>
-      {/* AdMob temporarily disabled to fix crash */}
+      {/* AdMob disabled via feature flag */}
     </View>
   );
 }

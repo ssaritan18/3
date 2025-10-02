@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-// AdMob temporarily disabled to fix crash
-// import { adMobService, RewardResult } from '../services/AdMobService';
+import Constants from 'expo-constants';
 import { useSubscription } from '../context/SubscriptionContext';
+// import { adMobService, RewardResult } from '../services/AdMobService';
 
 interface RewardedAdButtonProps {
   onRewardEarned?: (amount: number, type: string) => void;
@@ -19,8 +19,12 @@ export function RewardedAdButton({
   style,
   buttonText = "🎁 Watch Ad for Bonus"
 }: RewardedAdButtonProps) {
-  // AdMob temporarily disabled to fix crash
-  return null;
+  const ENABLE_ADMOB = Constants.expoConfig?.extra?.ENABLE_ADMOB || false;
+  
+  // Feature flag kontrolü
+  if (!ENABLE_ADMOB) {
+    return null;
+  }
   const { subscription } = useSubscription();
   const [isLoading, setIsLoading] = useState(false);
   const [isAdReady, setIsAdReady] = useState(false);
