@@ -48,9 +48,7 @@
           "backgroundColor": "#000"
         }
       ],
-      "react-native-gesture-handler",
-      "react-native-screens",
-      "react-native-safe-area-context",
+      "react-native-reanimated",
       "expo-font",
       "expo-web-browser"
     ],

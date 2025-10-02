@@ -11,22 +11,20 @@ export default {
     },
     ios: {
       bundleIdentifier: "com.adhders.socialclub",
-      buildNumber: "17",
+      buildNumber: "18",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         GADApplicationIdentifier: "ca-app-pub-8247392015171096~2470722104"
       }
     },
     plugins: [
-      "react-native-gesture-handler",
-      "react-native-screens",
-      "react-native-safe-area-context"
+      "react-native-reanimated"
     ],
     extra: {
       backendUrl: "https://adhders-social-club.onrender.com",
-      ENABLE_ADMOB: process.env.EXPO_PUBLIC_ENABLE_ADMOB === 'true' || false,
-      ENABLE_ANIMATIONS: process.env.EXPO_PUBLIC_ENABLE_ANIMATIONS === 'true' || false,
-      ENABLE_REANIMATED: process.env.EXPO_PUBLIC_ENABLE_REANIMATED === 'true' || false,
+      ENABLE_ADMOB: false,
+      ENABLE_ANIMATIONS: false,
+      ENABLE_REANIMATED: false,
       eas: {
         projectId: "48f9e931-8683-4fd8-ac6c-99c5feb158e8"
       }
