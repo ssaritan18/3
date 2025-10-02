@@ -11,7 +11,7 @@ export default {
     },
     ios: {
       bundleIdentifier: "com.adhders.socialclub",
-      buildNumber: "12",
+      buildNumber: "13",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false
         // GADApplicationIdentifier removed - no ads SDK
