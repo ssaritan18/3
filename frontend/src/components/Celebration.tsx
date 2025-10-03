@@ -1,22 +1,11 @@
 import React from "react";
-import { Text, StyleSheet, Dimensions } from "react-native";
-import Animated, {
-  Easing,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withTiming,
-} from "react-native-reanimated";
+import { Text, StyleSheet, Dimensions, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import { Ionicons } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 
 export function Celebration({ visible, onDone }: { visible: boolean; onDone: () => void }) {
-  const scale = useSharedValue(0.5);
-  const opacity = useSharedValue(0);
-
   React.useEffect(() => {
     if (!visible) {
       return;
@@ -24,40 +13,24 @@ export function Celebration({ visible, onDone }: { visible: boolean; onDone: () 
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-    opacity.value = 0;
-    scale.value = 0.5;
-
-    opacity.value = withTiming(1, { duration: 150 });
-    scale.value = withSequence(
-      withTiming(1.2, { duration: 280, easing: Easing.out(Easing.ease) }),
-      withTiming(1, { duration: 180 })
-    );
-
     const timeout = setTimeout(() => {
-      opacity.value = withTiming(0, { duration: 200 }, (finished) => {
-        if (finished) {
-          runOnJS(onDone)();
-        }
-      });
+      onDone();
     }, 1200);
 
     return () => {
       clearTimeout(timeout);
     };
-  }, [visible, onDone, opacity, scale]);
-
-  const wrapStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
-  const cardStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  }, [visible, onDone]);
 
   if (!visible) return null;
   return (
-    <Animated.View style={[styles.overlay, wrapStyle]} pointerEvents="none">
-      <Animated.View style={[styles.card, cardStyle]}>
+    <View style={styles.overlay} pointerEvents="none">
+      <View style={styles.card}>
         <Ionicons name="trophy" size={48} color="#FFE3A3" />
         <Text style={styles.title}>Great job!</Text>
         <Text style={styles.meta}>Task completed</Text>
-      </Animated.View>
-    </Animated.View>
+      </View>
+    </View>
   );
 }
 
