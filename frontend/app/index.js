@@ -4,7 +4,8 @@ import { View, Text, Image, StyleSheet, ActivityIndicator, TouchableOpacity, Lin
 import axios from 'axios';
 import Constants from 'expo-constants';
 
-const BACKEND_URL = 'https://kanka-hello.preview.emergentagent.com';
+// Environment variable'dan oku veya fallback kullan
+const BACKEND_URL = Constants.expoConfig?.extra?.BACKEND_URL || 'https://kanka-hello.preview.emergentagent.com';
 const API = `${BACKEND_URL}/api`;
 
 export default function App() {
