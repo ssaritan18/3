@@ -35,6 +35,9 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "BACKEND_URL": "https://kanka-hello.preview.emergentagent.com"
     }
   }
 }
