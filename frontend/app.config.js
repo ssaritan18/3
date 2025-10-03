@@ -54,7 +54,6 @@ export default {
           backgroundColor: "#000000"
         }
       ],
-      "react-native-reanimated",
       "expo-font",
       "expo-web-browser"
     ],
