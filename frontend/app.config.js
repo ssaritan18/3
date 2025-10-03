@@ -32,7 +32,7 @@ export default {
     },
     ios: {
       bundleIdentifier: "com.adhders.socialclub",
-      buildNumber: "25",
+      buildNumber: "26",
       supportsTablet: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
