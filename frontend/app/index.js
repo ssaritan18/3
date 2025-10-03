@@ -5,7 +5,7 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 
 // Environment variable'dan oku veya fallback kullan
-const BACKEND_URL = Constants.expoConfig?.extra?.BACKEND_URL || 'https://kanka-hello.preview.emergentagent.com';
+const BACKEND_URL = Constants.expoConfig?.extra?.BACKEND_URL || 'https://adhders-social-club.onrender.com';
 const API = `${BACKEND_URL}/api`;
 
 export default function App() {
