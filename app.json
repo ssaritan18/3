@@ -1,3 +1,22 @@
 {
-  "expo": {}
+  "expo": {
+    "name": "ADHDers Social Club",
+    "slug": "7",
+    "version": "1.0.0",
+    "extra": {
+      "eas": {
+        "projectId": "b29d3acc-a25b-4cfd-a1cf-7a7ad7c1b829"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.ssaritan.adhderssocialclub",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.ssaritan.adhderssocialclub"
+    }
+  }
 }
