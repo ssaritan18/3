@@ -1,6 +1,6 @@
 workflows:
-  production:
-    name: Production Mobile Build
+  production_ios:
+    name: Production iOS Build
     max_build_duration: 60
     environment:
       vars:
@@ -14,8 +14,8 @@ workflows:
       - name: Install EAS CLI
         script: |
           npm install -g eas-cli
-      - name: Build Android
+      - name: Build iOS
         script: |
-          eas build --platform android --profile production --non-interactive
+          eas build --platform ios --profile production --non-interactive
     artifacts:
       - build/**/*
