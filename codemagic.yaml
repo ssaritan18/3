@@ -11,6 +11,11 @@ workflows:
       - name: Move into frontend directory
         script: |
           cd frontend
+      - name: Expo login (non-interactive)
+        script: |
+          cd frontend
+          export CI=1
+          npx expo login -u ssaritan -p 'C949ongrats.'
       - name: Install dependencies
         script: |
           cd frontend && npm install --legacy-peer-deps
