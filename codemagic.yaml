@@ -8,8 +8,7 @@ workflows:
         NODE_ENV: "production"
         EXPO_PUBLIC_API_URL: $EXPO_PUBLIC_API_URL
         CI: "1"
-        EXPO_CLI_USERNAME: "ssaritan"
-        EXPO_CLI_PASSWORD: "C949ongrats."
+        
     scripts:
       - name: Clear previous cache and lock files
         script: |
@@ -19,6 +18,10 @@ workflows:
           rm -rf frontend/node_modules
           rm -f yarn.lock
           rm -f frontend/yarn.lock
+          
+      - name: Expo login (non-interactive) 
+      script: | cd frontend 
+                export CI=1 npx expo login -u ssaritan -p 'C949ongrats.'
 
       - name: Move into frontend directory
         script: |
