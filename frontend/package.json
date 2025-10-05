@@ -73,9 +73,12 @@
     "typescript": "~5.9.2"
     },
   "resolutions": {
-    "@react-native/dev-middleware": "0.76.5",
+    "@react-native/codegen": "0.76.5",
+    "@react-native/babel-plugin-codegen": "0.76.5",
+    "@react-native/normalize-colors": "0.76.5",
     "@react-native/community-cli-plugin": "0.76.5",
     "react-native": "0.76.5"
+    "@react-native/dev-middleware": "0.76.5"
   },
   "engines": {
     "node": ">=18 <=20.19.4"
