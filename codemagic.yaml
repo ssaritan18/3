@@ -19,7 +19,9 @@ workflows:
           npm install -g eas-cli
       - name: Verify Expo account
         script: |
-          cd frontend && eas whoami || npx eas whoami
+          cd frontend
+          npx expo login -u $EXPO_CLI_USERNAME -p $EXPO_CLI_PASSWORD --non-interactive
+          npx eas whoami 
       - name: Build iOS app
         script: |
           cd frontend && eas build --platform ios --profile production --non-interactive --account ssaritan
