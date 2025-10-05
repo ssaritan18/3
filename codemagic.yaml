@@ -2,37 +2,40 @@ workflows:
   production_ios:
     name: Production iOS Build
     max_build_duration: 60
-   environment:
+    environment:
       node: 20.19.4
       vars:
         NODE_ENV: "production"
         EXPO_PUBLIC_API_URL: $EXPO_PUBLIC_API_URL
         CI: "1"
+
     scripts:
-      - name: Clear previous cache
+      - name: Clear previous cache and lock files
         script: |
           rm -rf /Users/builder/.npm
           rm -rf /Users/builder/.yarn
           rm -rf node_modules
           rm -rf frontend/node_modules
+          rm -f yarn.lock
+          rm -f frontend/yarn.lock
+
       - name: Move into frontend directory
         script: |
           cd frontend
-      - name: Expo login (non-interactive)
+
+      - name: Force reinstall with new resolutions
         script: |
           cd frontend
-          export CI=1
-          npx expo login -u ssaritan -p 'C949ongrats.'
-      - name: Install dependencies
-        script: |
-          cd frontend
-          yarn install --frozen-lockfile
+          yarn install --check-files --force
+
       - name: Install EAS CLI
         script: |
           npm install -g eas-cli
           export PATH=$(npm bin -g):$PATH
+
       - name: Build iOS app
         script: |
           cd frontend && eas build --platform ios --profile production --non-interactive
+
     artifacts:
       - frontend/build/**/*
