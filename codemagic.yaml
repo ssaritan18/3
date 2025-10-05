@@ -13,7 +13,7 @@ workflows:
           cd frontend
       - name: Install dependencies
         script: |
-          cd frontend && npm install
+          cd frontend && npm install --legacy-peer-deps
       - name: Install EAS CLI
         script: |
           npm install -g eas-cli
