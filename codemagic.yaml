@@ -19,7 +19,8 @@ workflows:
           npx expo login -u ssaritan -p 'C949ongrats.'
       - name: Install dependencies
         script: |
-          cd frontend && npm install --legacy-peer-deps
+          cd frontend
+          yarn install --frozen-lockfile
       - name: Install EAS CLI
         script: |
           npm install -g eas-cli
