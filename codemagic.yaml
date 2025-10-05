@@ -24,6 +24,7 @@ workflows:
       - name: Install EAS CLI
         script: |
           npm install -g eas-cli
+          export PATH=$(npm bin -g):$PATH
       - name: Build iOS app
         script: |
           cd frontend && eas build --platform ios --profile production --non-interactive
