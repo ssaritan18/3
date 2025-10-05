@@ -31,7 +31,7 @@
       "android": {
         "buildType": "app-bundle",
         "gradleCommand": ":app:bundleRelease",
-        "resourceClass": "m-medium"
+        "resourceClass": "medium"
       },
       "ios": {
         "buildConfiguration": "Release",
