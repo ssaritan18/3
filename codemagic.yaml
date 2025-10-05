@@ -2,13 +2,19 @@ workflows:
   production_ios:
     name: Production iOS Build
     max_build_duration: 60
-    environment:
+   environment:
+      node: 20.19.4
       vars:
         NODE_ENV: "production"
         EXPO_PUBLIC_API_URL: $EXPO_PUBLIC_API_URL
         CI: "1"
-      node: 20.19.4
     scripts:
+      - name: Clear previous cache
+        script: |
+          rm -rf /Users/builder/.npm
+          rm -rf /Users/builder/.yarn
+          rm -rf node_modules
+          rm -rf frontend/node_modules
       - name: Move into frontend directory
         script: |
           cd frontend
