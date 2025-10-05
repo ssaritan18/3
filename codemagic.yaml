@@ -8,7 +8,8 @@ workflows:
         NODE_ENV: "production"
         EXPO_PUBLIC_API_URL: $EXPO_PUBLIC_API_URL
         CI: "1"
-
+        EXPO_CLI_USERNAME: "ssaritan"
+        EXPO_CLI_PASSWORD: "C949ongrats."
     scripts:
       - name: Clear previous cache and lock files
         script: |
