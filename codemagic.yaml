@@ -5,12 +5,17 @@ workflows:
     environment:
       vars:
         NODE_ENV: "production"
-        EXPO_TOKEN: $EXPO_TOKEN
+        EXPO_CLI_USERNAME: $EXPO_CLI_USERNAME
+        EXPO_CLI_PASSWORD: $EXPO_CLI_PASSWORD
         EXPO_PUBLIC_API_URL: $EXPO_PUBLIC_API_URL
     scripts:
       - name: Move into frontend directory
         script: |
           cd frontend
+      - name: Pre-build login to Expo
+        script: |
+          cd frontend
+          npx expo login -u $EXPO_CLI_USERNAME -p $EXPO_CLI_PASSWORD --non-interactive
       - name: Install dependencies
         script: |
           cd frontend && npm install --legacy-peer-deps
@@ -19,9 +24,7 @@ workflows:
           npm install -g eas-cli
       - name: Verify Expo account
         script: |
-          cd frontend
-          npx expo login -u $EXPO_CLI_USERNAME -p $EXPO_CLI_PASSWORD --non-interactive
-          npx eas whoami 
+          cd frontend && npx eas whoami --account ssaritan
       - name: Build iOS app
         script: |
           cd frontend && eas build --platform ios --profile production --non-interactive --account ssaritan
