@@ -1,4 +1,7 @@
 {
+  "cli": {
+    "version": ">= 16.18.0"
+  },
   "build": {
     "development": {
       "developmentClient": true,
@@ -19,20 +22,22 @@
       }
     },
     "production": {
+      "channel": "production",
+      "releaseChannel": "production",
+      "env": {
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_API_URL": "https://adhders-social-club.onrender.com"
+      },
       "android": {
         "buildType": "app-bundle",
         "gradleCommand": ":app:bundleRelease",
-        "env": {
-          "NODE_ENV": "production"
-        }
+        "resourceClass": "m-medium"
       },
       "ios": {
         "buildConfiguration": "Release",
         "distribution": "store",
         "resourceClass": "m-medium",
-        "env": {
-          "NODE_ENV": "production"
-        }
+        "simulator": false
       }
     }
   },
@@ -47,7 +52,7 @@
       }
     }
   },
-  "cli": {
-    "version": ">= 16.18.0"
+  "project": {
+    "owner": "ssaritan"
   }
 }
