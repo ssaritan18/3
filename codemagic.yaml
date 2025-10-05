@@ -19,6 +19,6 @@ workflows:
           npm install -g eas-cli
       - name: Build iOS app
         script: |
-          cd frontend && eas build --platform ios --profile production --non-interactive --account ssaritan
+          cd frontend && eas build --platform ios --profile production --non-interactive
     artifacts:
       - frontend/build/**/*
