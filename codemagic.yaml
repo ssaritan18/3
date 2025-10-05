@@ -8,17 +8,20 @@ workflows:
         EXPO_TOKEN: $EXPO_TOKEN
         EXPO_PUBLIC_API_URL: $EXPO_PUBLIC_API_URL
     scripts:
+      - name: Move into frontend directory
+        script: |
+          cd frontend
       - name: Install dependencies
         script: |
-          npm install
+          cd frontend && npm install
       - name: Install EAS CLI
         script: |
           npm install -g eas-cli
       - name: Verify Expo account
         script: |
-          eas whoami || npx eas whoami
+          cd frontend && eas whoami || npx eas whoami
       - name: Build iOS app
         script: |
-          eas build --platform ios --profile production --non-interactive --account ssaritan
+          cd frontend && eas build --platform ios --profile production --non-interactive --account ssaritan
     artifacts:
-      - build/**/*
+      - frontend/build/**/*
