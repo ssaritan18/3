@@ -14,8 +14,11 @@ workflows:
       - name: Install EAS CLI
         script: |
           npm install -g eas-cli
-      - name: Build iOS
+      - name: Verify Expo account
         script: |
-          eas build --platform ios --profile production --non-interactive
+          eas whoami || npx eas whoami
+      - name: Build iOS app
+        script: |
+          eas build --platform ios --profile production --non-interactive --account ssaritan
     artifacts:
       - build/**/*
