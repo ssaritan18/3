@@ -2006,12 +2006,7 @@
   resolved "https://registry.npmjs.org/@react-native/debugger-frontend/-/debugger-frontend-0.76.5.tgz#0e89940543fb5029506690b83f12547d0bf42cc4"
   integrity sha512-5gtsLfBaSoa9WP8ToDb/8NnDBLZjv4sybQQj7rDKytKOdsXm3Pr2y4D7x7GQQtP1ZQRqzU0X0OZrhRz9xNnOqA==
 
-"@react-native/debugger-frontend@0.79.6":
-  version "0.79.6"
-  resolved "https://registry.npmjs.org/@react-native/debugger-frontend/-/debugger-frontend-0.79.6.tgz#ec0ea9c2f140a564d26789a18dc097519f1b9c48"
-  integrity sha512-lIK/KkaH7ueM22bLO0YNaQwZbT/oeqhaghOvmZacaNVbJR1Cdh/XAqjT8FgCS+7PUnbxA8B55NYNKGZG3O2pYw==
-
-"@react-native/dev-middleware@0.76.5":
+  "@react-native/dev-middleware@0.76.5", "@react-native/dev-middleware@0.79.6":
   version "0.76.5"
   resolved "https://registry.npmjs.org/@react-native/dev-middleware/-/dev-middleware-0.76.5.tgz#10d02fcc6c3c9d24f6dc147c2ef95d6fa6bd3787"
   integrity sha512-f8eimsxpkvMgJia7POKoUu9uqjGF6KgkxX4zqr/a6eoR1qdEAWUd6PonSAqtag3PAqvEaJpB99gLH2ZJI1nDGg==
@@ -2026,23 +2021,6 @@
     open "^7.0.3"
     selfsigned "^2.4.1"
     serve-static "^1.13.1"
-    ws "^6.2.3"
-
-"@react-native/dev-middleware@0.79.6":
-  version "0.79.6"
-  resolved "https://registry.npmjs.org/@react-native/dev-middleware/-/dev-middleware-0.79.6.tgz#62a4c0b987e5d100eae3e8c95c58ae1c8abe377a"
-  integrity sha512-BK3GZBa9c7XSNR27EDRtxrgyyA3/mf1j3/y+mPk7Ac0Myu85YNrXnC9g3mL5Ytwo0g58TKrAIgs1fF2Q5Mn6mQ==
-  dependencies:
-    "@isaacs/ttlcache" "^1.4.1"
-    "@react-native/debugger-frontend" "0.79.6"
-    chrome-launcher "^0.15.2"
-    chromium-edge-launcher "^0.2.0"
-    connect "^3.6.5"
-    debug "^2.2.0"
-    invariant "^2.2.4"
-    nullthrows "^1.1.1"
-    open "^7.0.3"
-    serve-static "^1.16.2"
     ws "^6.2.3"
 
 "@react-native/gradle-plugin@0.76.5":
@@ -7119,7 +7097,7 @@ serialize-error@^2.1.0:
   resolved "https://registry.npmjs.org/serialize-error/-/serialize-error-2.1.0.tgz#50b679d5635cdf84667bdc8e59af4e5b81d5f60a"
   integrity sha512-ghgmKt5o4Tly5yEG/UJp8qTd0AN7Xalw4XBtDEKP655B699qMEtra1WlXeE6WIvdEG481JvRxULKsInq/iNysw==
 
-serve-static@^1.13.1, serve-static@^1.16.2:
+serve-static@^1.13.1:
   version "1.16.2"
   resolved "https://registry.npmjs.org/serve-static/-/serve-static-1.16.2.tgz#b6a5343da47f6bdd2673848bf45754941e803296"
   integrity sha512-VqpjJZKadQB/PEbEwvFdO43Ax5dFBZ2UECszz8bQ7pi7wt//PWe1P6MN7eCnjsatYtBT6EuiClbjSWP2WrIoTw==
