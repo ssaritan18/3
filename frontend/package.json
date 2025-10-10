@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "node server.js",
+    "start": "expo start --port 5000 --web",
     "build": "expo export --platform web",
     "vercel-build": "expo export --platform web",
     "build:android": "eas build --platform android --profile production",
@@ -11,7 +11,10 @@
     "build:all": "eas build --platform all --profile production",
     "postinstall": "node scripts/patch-expo-router-podspec.cjs",
     "submit:android": "eas submit --platform android --profile production",
-    "submit:ios": "eas submit --platform ios --profile production"
+    "submit:ios": "eas submit --platform ios --profile production",
+    "docker:dev": "docker-compose up dev",
+    "docker:ios": "docker-compose run --rm build-ios",
+    "docker:shell": "docker-compose run --rm shell"
   },
   "dependencies": {
     "@babel/runtime": "^7.25.0",
@@ -51,7 +54,7 @@
     "expo-updates": "~29.0.12",
     "expo-web-browser": "~15.0.8",
     "react": "18.2.0",
-    "react-dom": "19.1.0",
+    "react-dom": "18.2.0",
     "react-native": "0.76.5",
     "react-native-dotenv": "^3.4.11",
     "react-native-draggable-flatlist": "^4.0.3",
@@ -67,7 +70,8 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/plugin-transform-template-literals": "^7.25.0",
-    "@types/react": "~19.1.10",
+    "@types/react": "~18.2.79",
+    "eas-cli": "^16.20.4",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"
